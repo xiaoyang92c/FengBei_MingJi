@@ -1,4 +1,4 @@
-# 丰碑与铭记
+# FengBei_MingJi · 丰碑与铭记
 
 > 先有锤声，才有火车声。路修好了，别忘了修路的人。
 
@@ -6,7 +6,9 @@
 
 项目以手机竖屏体验为主，同时适配电脑横屏，完整体验约需 **3—5 分钟**。
 
-**[在线体验](https://chuanyu.xiaoyang92c.chatgpt.site) · [GitHub 仓库](https://github.com/xiaoyang92c/FengBei_MingJi)**
+**[GitHub 仓库](https://github.com/xiaoyang92c/FengBei_MingJi)**
+
+本项目在 GitHub 维护。本地目录为 `E:\A-Codex\FengBei_MingJi`，打开该目录即可开发，源码直接位于根目录。
 
 ## 场景预览
 
@@ -125,7 +127,7 @@ FengBei_MingJi/
 ├─ docs/                     # 设计、动效、音频与史料记录
 ├─ scripts/                  # 素材处理与体感检查脚本
 ├─ output/imagegen/          # 场景生成原图与提示词
-└─ .openai/hosting.json      # 当前 Sites 站点的静态托管配置
+└─ README.md                 # 中文项目说明
 ```
 
 ## 素材与史料说明
@@ -146,18 +148,22 @@ FengBei_MingJi/
 - [场景生成提示词](output/imagegen/scenes-v42/prompts.json)
 - [记忆册与年表](docs/memory-ledger.md)
 - [体感视差](docs/device-tilt.md)
+- [移动端布局、音频与性能调整](docs/mobile-runtime-v46.md)
 - [电视序幕](docs/tv-cover.md)与[电视终章](docs/tv-finale.md)
 - [环境音混音](docs/audio-mix-v33.md)与[界面音效](docs/ui-audio.md)
 
 ## 部署与检查
 
-项目可部署为纯静态站点，构建输出目录为 `dist/`。当前使用 Sites 托管，站点配置见 `.openai/hosting.json`。资源使用 `/assets/…` 根路径，建议部署在站点根目录；部署到子目录时需要同步调整构建和资源路径。
+项目可部署为纯静态站点，构建输出目录为 `dist/`。已移除 Sites 的本地发布配置，后续直接在此仓库修改、提交和推送。`node_modules/`、`dist/` 等依赖和构建产物不提交到 GitHub。
+
+资源使用 `/assets/…` 根路径，部署在站点根目录即可；如果使用带仓库子路径的 GitHub Pages，需要同步调整构建和资源路径。
 
 ```bash
 npm run build
 node scripts/check-device-tilt.mjs
+node scripts/check-mobile-runtime.mjs
 ```
 
-第一条命令检查类型并构建；第二条用模拟传感器事件检查体感的姿态计算、授权、暂停恢复、限幅和清理，不会请求真实设备权限。实际传感器手感与音频体验仍需在真实设备上确认。
+上述命令分别进行类型检查与构建、模拟体感事件检查，以及移动端音频状态和加载数字居中的回归检查，均不请求真实设备权限。实际传感器手感与音频体验仍需在真实设备上确认。
 
-“返回记忆馆”和“进入下一章”的外部地址尚未接入，目前会显示说明。
+“返回记忆馆”和“进入下一章”的外部地址尚未接入。

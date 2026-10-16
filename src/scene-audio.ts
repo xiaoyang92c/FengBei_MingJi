@@ -27,6 +27,7 @@ export class SceneAudio {
   private requested: RoomId | null = null;
   private revision = 0;
   private reading = false;
+  private retry = 0;
   private failed = new Set<RoomId>();
 
   constructor(private onError: (message: string) => void = () => {}) {}
@@ -35,6 +36,7 @@ export class SceneAudio {
     this.reading = reading;
     const wanted = enabled && room && tracks[room].length ? room : null;
     if (!context || !wanted) {
+      window.clearTimeout(this.retry);
       this.requested = null;
       this.revision++;
       if (this.mix) this.release(this.mix);
@@ -47,12 +49,16 @@ export class SceneAudio {
     }
     if (this.requested === wanted) return;
     this.requested = wanted;
+    window.clearTimeout(this.retry);
     const revision = ++this.revision;
     if (this.mix) this.release(this.mix);
     this.mix = null;
     void this.activate(context, wanted, revision).catch(() => {
       if (revision !== this.revision) return;
       this.requested = null;
+      this.retry = window.setTimeout(() => {
+        if (revision === this.revision && !document.hidden) this.sync(context, wanted, true, this.reading);
+      }, 4000);
       if (!this.failed.has(wanted)) {
         this.failed.add(wanted);
         this.onError('场景音效暂时未加载成功，可重新开启声音重试。');

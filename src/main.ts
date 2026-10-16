@@ -15,6 +15,7 @@ import gsap from 'gsap';
 import { CustomEase } from 'gsap/CustomEase';
 import { mountAtmosphere } from './atmosphere';
 import { SceneAudio } from './scene-audio';
+import { BackgroundMusic } from './background-music';
 import { UiAudio } from './ui-audio';
 import { TvAudio } from './tv-audio';
 import { DeviceTilt, type TiltPosition, type TiltState } from './device-tilt';
@@ -28,6 +29,7 @@ const portalExit = CustomEase.create('portal-exit', '.44,0,.18,1');
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+const touchDevice = window.matchMedia('(pointer: coarse)');
 const progressKey = 'fengbei-memory-v2';
 let collected = new Set<ClueId>();
 try { collected = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]') as ClueId[]); } catch { /* Private browsing may block storage. */ }
@@ -48,10 +50,10 @@ const sceneBackground = (room: Room) => sceneBackgroundStyle(room, innerWidth, i
 // Keep the complete central subject inside the capped door opening on large
 // monitors; the phone preview retains its original half-size composition.
 const previewSceneScale = () => Math.min(.5, 820 / Math.max(innerWidth, innerHeight));
-const sceneAudio = new SceneAudio(message => announce(message));
-const uiAudio = new UiAudio(message => announce(message));
+const sceneAudio = new SceneAudio();
+const uiAudio = new UiAudio(() => {});
 const travelWindVolume = .29;
-const tvAudio = new TvAudio(message => announce(message));
+const tvAudio = new TvAudio(() => {});
 function readRoute(): Screen {
   const [kind, id] = decodeURIComponent(location.hash.slice(1)).split('/');
   if (kind === 'select') return { kind, room: roomById(id).id };
@@ -91,22 +93,20 @@ app.innerHTML = `
   <div id="view"></div>
   <canvas id="grain-canvas" aria-hidden="true"></canvas>
   <canvas id="travel-canvas" aria-hidden="true"></canvas>
-  <audio id="background-music" src="/assets/audio/vintage-travelogue.mp3" loop preload="none" hidden aria-hidden="true"></audio>
+  <audio id="background-music" src="/assets/audio/vintage-travelogue-stream-v46.m4a" loop playsinline preload="none" hidden aria-hidden="true"></audio>
   <div id="lens-vignette" aria-hidden="true"></div>
   <div id="transition-veil" aria-hidden="true"><span class="veil-line"></span></div>
-  <div id="notice" role="status" aria-live="polite" aria-atomic="true"><span class="notice-heading">随行提示</span><p class="notice-message"></p></div>
-  <button id="tilt-toggle" type="button" hidden aria-pressed="false">开启体感</button>
 `;
 const view = document.querySelector<HTMLElement>('#view')!;
-const tiltButton = document.querySelector<HTMLButtonElement>('#tilt-toggle')!;
 function updateTiltButton() {
-  if (!deviceTilt) return;
+  const tiltButton = view.querySelector<HTMLButtonElement>('#tilt-toggle');
+  if (!deviceTilt || !tiltButton) return;
   const labels: Record<TiltState, string> = {
     permission: '开启体感', starting: '体感连接中', active: '体感 开', off: '体感 关',
     denied: '体感未授权', 'no-data': '重试体感', insecure: '体感需 HTTPS', unavailable: '体感不支持', reduced: '体感已关闭',
   };
   tiltButton.hidden = !deviceTilt.visible || deviceTilt.state === 'unavailable';
-  tiltButton.textContent = labels[deviceTilt.state];
+  tiltButton.querySelector('b')!.textContent = deviceTilt.state === 'active' ? '开' : deviceTilt.state === 'permission' ? '开启' : deviceTilt.state === 'starting' ? '连接中' : deviceTilt.state === 'denied' || deviceTilt.state === 'no-data' ? '重试' : '关';
   tiltButton.disabled = ['insecure', 'unavailable', 'reduced'].includes(deviceTilt.state);
   tiltButton.setAttribute('aria-pressed', String(deviceTilt.state === 'active'));
   tiltButton.setAttribute('aria-label', deviceTilt.state === 'active' ? '关闭倾斜视差' : labels[deviceTilt.state]);
@@ -115,7 +115,6 @@ function updateTiltButton() {
     : deviceTilt.state === 'reduced' ? '系统已开启减少动态效果'
     : deviceTilt.state === 'active' ? '轻轻倾斜手机环顾场景，点击关闭' : '保持手机自然握姿，点击开启倾斜视差';
 }
-tiltButton.addEventListener('click', () => { void deviceTilt?.toggle(); });
 const worldStage = document.querySelector<HTMLElement>('#world-stage')!;
 const worldCamera = document.querySelector<HTMLElement>('#world-camera')!;
 const facadeStage = document.querySelector<HTMLElement>('#facade-stage')!;
@@ -283,19 +282,25 @@ function setPortalX(x: number) {
   updateSelectCopy(x);
   syncPortalSceneImages();
 }
+let dragXTo: ReturnType<typeof gsap.quickTo> | null = null;
 function followPortalX(x: number) {
-  const updateBlur = chapterMotionBlur();
-  gsap.to(facadeTrack, {
-    x, duration: reduced.matches ? 0 : .14, ease: 'power2.out', overwrite: 'auto',
-    onUpdate: () => { updateBlur(); updateSelectCopy(Number(gsap.getProperty(facadeTrack, 'x'))); syncPortalSceneImages(); },
-    onComplete: clearChapterBlur,
-  });
+  if (!dragXTo) {
+    const updateBlur = chapterMotionBlur();
+    dragXTo = gsap.quickTo(facadeTrack, 'x', {
+      duration: reduced.matches ? 0 : touchDevice.matches ? .09 : .14, ease: 'power2.out',
+      onUpdate: () => { updateBlur(); updateSelectCopy(Number(gsap.getProperty(facadeTrack, 'x'))); syncPortalSceneImages(); },
+      onComplete: clearChapterBlur,
+    });
+  }
+  dragXTo(x);
 }
 function clearChapterBlur() {
   facadeTrack.style.filter = '';
   document.querySelector('#chapter-motion-blur')?.setAttribute('stdDeviation', '0 0');
 }
 function chapterMotionBlur() {
+  // A moving, three-screen-wide SVG blur forces Safari to rasterize the wall.
+  if (touchDevice.matches) return () => {};
   let lastX = Number(gsap.getProperty(facadeTrack, 'x'));
   let lastTime = performance.now();
   const blur = document.querySelector('#chapter-motion-blur');
@@ -321,6 +326,8 @@ function finishSelectReveal(index: number) {
   }
 }
 function slidePortalTo(index: number, duration = 1.05) {
+  dragXTo?.tween.kill();
+  dragXTo = null;
   const x = portalX(index);
   if (!duration) { clearChapterBlur(); setPortalX(x); finishSelectReveal(index); return; }
   const updateBlur = chapterMotionBlur();
@@ -422,11 +429,37 @@ function updateWorld(immediate = false) {
   worldReady = true;
 }
 function hidePortalSurface(surface: PortalSurface) {
+  if (surface.viewport.style.visibility === 'hidden') return;
   surface.viewport.style.visibility = 'hidden';
   surface.innerShade.style.opacity = '0';
   surface.innerShade.removeAttribute('d');
 }
 function syncPortalSceneImages() {
+  // Mobile previews travel inside their small native clipping rectangle. Only
+  // doorway flights need screen-sized projected polygons and geometry reads.
+  if (touchDevice.matches && screen.kind === 'select' && !flightMotion && !portalTravelInProgress) {
+    const size = `${innerWidth}/${innerHeight}`;
+    portalSurfaces.forEach(surface => {
+      hidePortalSurface(surface);
+      if (surface.image.parentElement !== surface.opening) {
+        surface.opening.append(surface.image);
+        surface.viewportSize = undefined;
+      }
+      if (surface.viewportSize === size) return;
+      const room = roomById(surface.viewport.dataset.room!);
+      const layout = sceneLayout(room, innerWidth, innerHeight);
+      const scale = previewSceneScale() / Number(gsap.getProperty(facadeCamera, 'scaleX'));
+      surface.image.style.cssText = `${sceneBackground(room)};inset:auto;width:${layout.planeWidth}px;height:${layout.planeHeight}px;left:50%;top:50%;transform:translate(-50%,-50%) scale(${scale})`;
+      surface.viewportSize = size;
+    });
+    return;
+  }
+  portalSurfaces.forEach(surface => {
+    if (surface.image.parentElement !== surface.viewport) {
+      surface.viewport.prepend(surface.image);
+      surface.viewportSize = undefined;
+    }
+  });
   if (!flightMotion && screen.kind !== 'select') {
     portalSurfaces.forEach(hidePortalSurface);
     return;
@@ -533,17 +566,6 @@ function updateFacade(immediate = false) {
   gsap.set(facadeStage, { scale: 1, x: 0, y: 0, opacity: select ? 1 : 0, visibility: select ? 'visible' : 'hidden' });
   syncPortalSceneImages();
 }
-const notice = document.querySelector<HTMLElement>('#notice')!;
-let noticeTimer = 0;
-function announce(message: string) {
-  notice.querySelector('.notice-message')!.textContent = message.replace(/[。.]$/, '');
-  notice.classList.remove('show');
-  gsap.killTweensOf(notice);
-  gsap.fromTo(notice, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, duration: reduced.matches ? 0 : .32, ease: 'power2.out', clearProps: 'transform,opacity,visibility' });
-  notice.classList.add('show');
-  window.clearTimeout(noticeTimer);
-  noticeTimer = window.setTimeout(() => notice.classList.remove('show'), 4200);
-}
 
 window.addEventListener('resize', () => {
   lastWorldPose = '';
@@ -561,13 +583,14 @@ window.addEventListener('resize', () => {
 }, { passive: true });
 
 const bgm = document.querySelector<HTMLAudioElement>('#background-music')!;
+const backgroundMusic = new BackgroundMusic(bgm);
 let audioContext: AudioContext | null = null;
 function startAudioContext() {
   if (audioContext) { void audioContext.resume().catch(() => {}); uiAudio.preload(audioContext); return; }
   try {
     audioContext = new AudioContext();
     uiAudio.preload(audioContext);
-  } catch { announce('当前浏览器无法播放音效。'); }
+  } catch { /* Audio can be unlocked by a later gesture. */ }
 }
 function syncBgm() {
   const television = screen.kind === 'cover' || screen.kind === 'finale';
@@ -576,25 +599,15 @@ function syncBgm() {
   if (document.hidden) uiAudio.stopAll();
   const sceneId = screen.kind === 'room' || screen.kind === 'chapter' ? screen.room : screen.kind === 'clue' ? clueById(screen.clue).roomId : screen.kind === 'notebook' ? worldRoom : null;
   sceneAudio.sync(audioContext, sceneId, soundEnabled && !document.hidden, screen.kind === 'clue' || screen.kind === 'notebook' || screen.kind === 'chapter');
-  const shouldPlay = soundEnabled && screen.kind !== 'cover' && !document.hidden;
-  if (!shouldPlay) {
-    gsap.killTweensOf(bgm);
-    bgm.pause();
-    return;
-  }
-  const musicLevel = sceneId || screen.kind === 'finale' ? .075 : .36;
-  if (!bgm.paused) { gsap.to(bgm, { volume: musicLevel, duration: 1.1, ease: 'sine.inOut', overwrite: 'auto' }); return; }
-  bgm.volume = 0;
-  void bgm.play().then(() => {
-    if (!soundEnabled || screen.kind === 'cover' || document.hidden) { bgm.pause(); return; }
-    gsap.to(bgm, { volume: musicLevel, duration: 1.2, ease: 'sine.out' });
-  }).catch(() => announce('背景音乐暂时无法播放。'));
+  const shouldPlay = soundEnabled && !document.hidden && (screen.kind !== 'cover' || backgroundMusic.primed);
+  const musicLevel = screen.kind === 'cover' ? 0 : sceneId || screen.kind === 'finale' ? .075 : .36;
+  backgroundMusic.sync(audioContext, shouldPlay, musicLevel);
 }
 function setSound(value: boolean) {
   soundEnabled = value;
   uiAudio.setEnabled(value && !document.hidden);
   if (!value) uiAudio.stopAll();
-  if (value) startAudioContext();
+  if (value) { startAudioContext(); if (audioContext) backgroundMusic.unlock(audioContext); }
   updateSoundButton();
   syncBgm();
 }
@@ -605,7 +618,7 @@ function updateSoundButton() {
     finaleSound.setAttribute('aria-pressed', String(soundEnabled));
     finaleSound.setAttribute('aria-label', soundEnabled ? '关闭声音' : '开启声音');
   }
-  const sound = view.querySelector<HTMLButtonElement>('.sound-toggle');
+  const sound = view.querySelector<HTMLButtonElement>('[data-action="sound"]');
   if (!sound) return;
   // Keep the existing bars so toggling sound can animate from their current height.
   if (!sound.querySelector('.sound-wave')) {
@@ -617,8 +630,24 @@ function updateSoundButton() {
   sound.setAttribute('aria-pressed', String(soundEnabled));
 }
 document.addEventListener('visibilitychange', syncBgm);
+window.addEventListener('pageshow', syncBgm);
+document.addEventListener('pointerdown', unlockAudio, { capture: true, passive: true });
+document.addEventListener('keydown', unlockAudio, { capture: true });
+function unlockAudio() {
+  if (!soundEnabled || document.hidden) return;
+  startAudioContext();
+  if (audioContext) backgroundMusic.unlock(audioContext);
+  syncBgm();
+}
+if (import.meta.hot) import.meta.hot.dispose(() => {
+  backgroundMusic.dispose();
+  document.removeEventListener('visibilitychange', syncBgm);
+  window.removeEventListener('pageshow', syncBgm);
+  document.removeEventListener('pointerdown', unlockAudio, true);
+  document.removeEventListener('keydown', unlockAudio, true);
+});
 const roomIndex = (id: RoomId) => rooms.findIndex((room) => room.id === id);
-const soundButton = `<button class="sound-toggle pencil-control" data-action="sound" aria-label="切换声音"></button>`;
+const soundButton = `<div class="scene-controls"><button id="tilt-toggle" class="tilt-toggle sound-toggle pencil-control" type="button" data-action="tilt" hidden aria-pressed="false" aria-label="开启体感">${capsulePencil}<span class="sound-label">体感</span><b>开启</b></button><button class="sound-toggle pencil-control" data-action="sound" aria-label="切换声音"></button></div>`;
 function passageButton(room: Room, leaving = false) {
   const label = leaving ? '切换空间' : '进入空间';
   const arrow = 'M5 19 17 7M5 7H17V19';
@@ -714,7 +743,7 @@ function stageRoomHud() {
 function stageRoomUi() {
   if (screen.kind !== 'room' || reduced.matches) return;
   stageRoomHud();
-  gsap.set(view.querySelectorAll('.room-footer,.room-screen .sound-toggle,.voice-marker,.clue-marker'), { autoAlpha: 0, y: -24 });
+  gsap.set(view.querySelectorAll('.room-footer,.room-screen .scene-controls,.voice-marker,.clue-marker'), { autoAlpha: 0, y: -24 });
 }
 function revealRoomHud() {
   const hud = view.querySelector<HTMLElement>('.room-hud');
@@ -734,7 +763,7 @@ function revealRoomHud() {
 function revealRoomUi() {
   if (screen.kind !== 'room' || reduced.matches) return;
   roomUiMotion?.kill();
-  const chrome = view.querySelectorAll('.room-footer,.room-screen .sound-toggle,.voice-marker');
+  const chrome = view.querySelectorAll('.room-footer,.room-screen .scene-controls,.voice-marker');
   const markers = view.querySelectorAll('.clue-marker');
   roomUiMotion = gsap.timeline()
     .to(chrome, { autoAlpha: 1, y: 0, duration: .44, stagger: .035, ease: 'power2.out' }, 0)
@@ -747,7 +776,7 @@ function leaveRoomUi(): gsap.core.Timeline {
   roomUiMotion?.kill();
   const timeline = gsap.timeline();
   roomUiMotion = timeline;
-  const chrome = view.querySelectorAll('.room-footer,.room-screen .sound-toggle,.voice-marker,.clue-marker');
+  const chrome = view.querySelectorAll('.room-footer,.room-screen .scene-controls,.voice-marker,.clue-marker');
   timeline.to(chrome, { autoAlpha: 0, y: -24, duration: .22, stagger: .02, ease: 'power2.in' }, 0);
   const hud = view.querySelector('.room-hud');
   if (hud) {
@@ -813,6 +842,7 @@ function render(finaleBackdrop?: HTMLElement) {
     rotationY: Number(gsap.getProperty(facadeCamera, 'rotationY')) * .24,
   });
   updateSoundButton();
+  updateTiltButton();
   syncBgm();
   if (previousRoute !== location.hash && (screen.kind === 'clue' || screen.kind === 'notebook' || screen.kind === 'chapter')) {
     uiAudio.play(audioContext, 'paper', { volume: .48 });
@@ -926,12 +956,12 @@ async function travelRoom(entering: boolean) {
     gsap.killTweensOf(motion);
     if (flightMotion === motion) flightMotion = null;
     gsap.set(facadeStage, { scale: 1, x: 0, y: 0 });
-    syncPortalSceneImages();
     doorBlur?.setAttribute('stdDeviation', '0 0');
     doorShadow?.setAttribute('flood-opacity', '.208');
     wallBlur?.setAttribute('stdDeviation', '0');
     portalTravelInProgress = false;
     app.classList.remove('portal-travelling');
+    syncPortalSceneImages();
     document.querySelector<SVGSVGElement>('.optical-definitions')?.unpauseAnimations();
     if (screen.kind === 'room') gsap.set(facadeStage, { visibility: 'hidden', opacity: 0, scale: 1 });
     busy = false;
@@ -941,7 +971,7 @@ async function travelRoom(entering: boolean) {
   if (entering) {
     pan = 0;
     travelBurst();
-    const leaving = view.querySelectorAll<HTMLElement>('.select-heading, .select-footer, .select-navigation, .select-screen .sound-toggle');
+    const leaving = view.querySelectorAll<HTMLElement>('.select-heading, .select-footer, .select-navigation, .select-screen .scene-controls');
     navigation.to(leaving, { autoAlpha: 0, y: -22, duration: .22, ease: 'power2.in' }, 0);
     navigation.call(() => {
       history.pushState(null, '', `#room/${room.id}`);
@@ -965,7 +995,7 @@ async function travelRoom(entering: boolean) {
       updateSelectCopy(Number(gsap.getProperty(facadeTrack, 'x')));
       const copy = view.querySelector<HTMLElement>('.select-copy-panel.is-active');
       copy?.classList.remove('is-readable');
-      const selectionUi = view.querySelectorAll<HTMLElement>('.select-heading, .select-footer, .select-navigation, .select-screen .sound-toggle');
+      const selectionUi = view.querySelectorAll<HTMLElement>('.select-heading, .select-footer, .select-navigation, .select-screen .scene-controls');
       gsap.set(selectionUi, { autoAlpha: 0, y: -12 });
       applyFlightMotion();
       copy?.classList.add('is-readable');
@@ -977,7 +1007,7 @@ function revealWindowAfterTv(veil: HTMLElement): gsap.core.Timeline {
   const screenElement = view.querySelector<HTMLElement>('.select-screen')!;
   const panel = screenElement.querySelector<HTMLElement>('.select-copy-panel.is-active');
   const layers = [facadeStage, ...[...portalSurfaces.values()].map(surface => surface.viewport)];
-  const chrome = screenElement.querySelectorAll('.select-navigation,.sound-toggle');
+  const chrome = screenElement.querySelectorAll('.select-navigation,.scene-controls');
   const copy = panel?.querySelectorAll('.select-heading,.select-footer') ?? [];
   panel?.classList.remove('is-readable');
   const timeline = gsap.timeline({ onComplete: () => {
@@ -1120,6 +1150,7 @@ function enterFromTv(enabled: boolean) {
 function handleAction(action: string, id?: string) {
   switch (action) {
     case 'sound': setSound(!soundEnabled); break;
+    case 'tilt': void deviceTilt?.toggle(); break;
     case 'prev-room': case 'next-room': {
       if (screen.kind !== 'select') break;
       const index = roomIndex(screen.room) + (action === 'next-room' ? 1 : -1);
@@ -1138,8 +1169,7 @@ function handleAction(action: string, id?: string) {
     case 'finale': if (collected.size === 5) go('#finale', true); break;
     case 'rewatch': go('#cover', true); break;
     case 'restart': restartExperience(); break;
-    case 'museum': announce('记忆馆总入口尚未提供。'); break;
-    case 'next': announce('下一章地址尚未接入。'); break;
+    case 'museum': case 'next': break;
   }
 }
 // Delegate to the hosts that actually own the pencil wash; child crossings
@@ -1190,7 +1220,7 @@ app.addEventListener('pointerdown', (event) => {
   const element = event.target as HTMLElement;
   const selection = element.closest<HTMLElement>('.select-screen');
   if (selection && screen.kind === 'select' && !busy && (event.pointerType !== 'mouse' || event.button === 0)
-    && !element.closest('.select-navigation, .select-footer, .sound-toggle')) {
+    && !element.closest('.select-navigation, .select-footer, .scene-controls')) {
     selectionDrag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, index: roomIndex(screen.room), active: false };
     return;
   }

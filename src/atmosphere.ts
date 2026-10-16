@@ -57,10 +57,11 @@ export function mountAtmosphere(app: HTMLElement, rig: HTMLElement, grain: HTMLC
   definitions.querySelector('#lens-field')!.setAttribute('href', field.toDataURL());
 
   const context = grain.getContext('2d');
+  const mobile = window.matchMedia('(pointer: coarse)');
   let noise: ImageData | null = null;
   function resize() {
-    grain.width = Math.min(480, Math.ceil(innerWidth * .45));
-    grain.height = Math.min(300, Math.ceil(innerHeight * .35));
+    grain.width = Math.min(mobile.matches ? 200 : 480, Math.ceil(innerWidth * .45));
+    grain.height = Math.min(mobile.matches ? 130 : 300, Math.ceil(innerHeight * .35));
     noise = context?.createImageData(grain.width, grain.height) ?? null;
     definitions.querySelector('#lens-displacement')!.setAttribute('scale', String(Math.min(innerWidth, innerHeight) * .105));
   }
@@ -69,6 +70,8 @@ export function mountAtmosphere(app: HTMLElement, rig: HTMLElement, grain: HTMLC
   let lastGrain = 0;
   const tick = (time: number) => {
     if (document.hidden) return;
+    const scene = app.querySelector<HTMLElement>('#view')?.dataset.screen;
+    if (scene !== 'select' && scene !== 'room' && scene !== 'clue') return;
     if (reduced.matches) {
       rig.style.transform = 'none';
       return;
@@ -76,7 +79,7 @@ export function mountAtmosphere(app: HTMLElement, rig: HTMLElement, grain: HTMLC
     const x = Math.sin(time * .71) * 2.3 + Math.sin(time * 1.83 + .4) * .75;
     const y = Math.sin(time * .57 + 1.1) * 1.8 + Math.sin(time * 1.49) * .55;
     rig.style.transform = `translate3d(${x.toFixed(3)}px,${y.toFixed(3)}px,0) scale(1.024)`;
-    if (!context || !noise || time - lastGrain < .083) return;
+    if (!context || !noise || time - lastGrain < (mobile.matches ? .125 : .083)) return;
     lastGrain = time;
     for (let i = 0; i < noise.data.length; i += 4) {
       const shade = Math.floor(Math.random() * 256);

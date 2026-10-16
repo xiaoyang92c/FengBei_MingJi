@@ -51,12 +51,13 @@
 .crt-entry.is-armed .crt-entry-copy>small{color:#d5cb91}
 .crt-key-hint{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:34px;margin:20px 0 0;font-size:8px;line-height:1.6;letter-spacing:.1em;color:#9ab481}
 .crt-keyboard-hint{color:#7f9a6b;font-size:7px}
-.crt-loader{position:absolute;left:24px;right:24px;top:48%;z-index:4;display:flex;flex-direction:column;align-items:center;transform:translateY(-50%);color:#ccdfb2;text-align:center}
+.crt-loader{position:absolute;left:24px;right:24px;top:50%;z-index:4;display:flex;flex-direction:column;align-items:center;transform:translateY(-50%);color:#ccdfb2;text-align:center}
 .crt-loader-label{font-size:9px;line-height:1.7;letter-spacing:.21em;color:#9ab384}
-.crt-counter{display:flex;align-items:baseline;justify-content:center;gap:10px;margin:23px 0 20px;animation:crt-counter-drift .23s steps(2,end) infinite;transform-origin:center}
-#view .crt-counter>b{display:block;min-width:3ch;font-family:Consolas,'Courier New',monospace!important;font-size:clamp(55px,10vw,86px);font-weight:400;line-height:1;letter-spacing:-.035em;text-align:right;text-shadow:0 0 5px #b9e49b50!important}
+.crt-counter{display:flex;align-items:center;justify-content:center;margin:23px 0 20px;transform-origin:center}
+#view .crt-counter>b{display:flex;justify-content:center;min-width:0;font-size:clamp(55px,10vw,86px);font-weight:400;line-height:1;letter-spacing:0;text-align:center;text-shadow:none!important}
+.crt-counter-vector{display:block;flex:none;height:.82em;overflow:visible;fill:currentColor}
 .crt-counter>span{font-family:Consolas,'Courier New',monospace!important;font-size:18px;color:#9fb98a}
-.crt-progress{position:relative;overflow:hidden;width:148px;height:3px;background:#a5c28a1a;transform:translateX(5px)}
+.crt-progress{position:relative;overflow:hidden;width:148px;height:3px;background:#a5c28a1a}
 .crt-progress>i{display:block;width:100%;height:100%;background:#b9d59c;transform:scaleX(0);transform-origin:left}
 .crt-loader>p{font-size:9px;line-height:1.6;letter-spacing:.2em;margin:15px 0 0;color:#8fa879}
 .crt-curve{position:absolute;inset:0;z-index:8;border-radius:inherit;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 36%,#030d0733 68%,#000502e0 100%),linear-gradient(135deg,#dcf4c509,transparent 30%,transparent 75%,#000a0250)}

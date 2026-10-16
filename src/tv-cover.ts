@@ -1,11 +1,12 @@
 import gsap from 'gsap';
+import { loadingNumber } from './loading-number';
 import { crtScreenMarkup, crtLetters, revealCrtLine, mountCrtLens, createCrtNoise } from './crt-display';
 
 type Loader = () => Promise<unknown>;
 export type TvSounds = { ready: () => Promise<void>; powerOn: () => void; ambience: () => void; hover: () => void; click: () => void; stopHover: () => void };
 
 export function tvCoverPage() {
-  return `<section class="screen cover-screen tv-cover" aria-label="丰碑与铭记：电视序幕" aria-busy="true">${crtScreenMarkup(`      <div class="crt-loader"><span class="crt-loader-label">成渝记忆 / 正在调谐</span><div class="crt-counter" aria-hidden="true"><b>00</b><span>%</span></div><div class="crt-progress" role="progressbar" aria-label="开机与记忆素材载入进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><p role="status" aria-live="polite" aria-atomic="true">接通信号</p></div>
+  return `<section class="screen cover-screen tv-cover" aria-label="丰碑与铭记：电视序幕" aria-busy="true">${crtScreenMarkup(`      <div class="crt-loader"><span class="crt-loader-label">成渝记忆 / 正在调谐</span><div class="crt-counter" aria-hidden="true"><b>${loadingNumber(0)}</b><span hidden>%</span></div><div class="crt-progress" role="progressbar" aria-label="开机与记忆素材载入进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><p role="status" aria-live="polite" aria-atomic="true">接通信号</p></div>
       <div class="crt-signal" inert aria-hidden="true">
         <header class="crt-heading tv-element"><span>成渝铁路</span><span>第二章 / 建设者记忆</span></header>
         <main class="crt-program"><div class="crt-station tv-element"><i aria-hidden="true"></i><span>成渝记忆</span><b>CH 02</b></div><h1 class="crt-title tv-element" data-title="丰碑与铭记">丰碑与铭记</h1>
@@ -245,7 +246,7 @@ export function mountTvCover(container: HTMLElement, reduced: boolean, loaders: 
   const showProgram = () => {
     if (disposed || finishing) return;
     finishing = true;
-    number.textContent = '100';
+    number.innerHTML = loadingNumber(100);
     progressbar.setAttribute('aria-valuenow', '100');
     fill.style.transform = 'scaleX(1)';
     writeStatus('信号已锁定');
@@ -295,7 +296,7 @@ export function mountTvCover(container: HTMLElement, reduced: boolean, loaders: 
       const integer = Math.max(0, Math.floor(value));
       if (integer !== lastNumber) {
         lastNumber = integer;
-        number.textContent = String(integer).padStart(2, '0');
+        number.innerHTML = loadingNumber(integer);
         progressbar.setAttribute('aria-valuenow', String(integer));
         fill.style.transform = `scaleX(${integer / 100})`;
       }

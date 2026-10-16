@@ -19,7 +19,7 @@
 
 .finale-screen{background:#39413d}.finale-back{position:absolute;inset:0;background:url('/assets/scenes/memorial-court-v3.webp') center/cover;opacity:.42}.finale-screen:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#121a1688,transparent 40%,#121a16ef 79%);pointer-events:none}.finale-top,.finale-copy,.finale-actions{position:absolute;z-index:3}.finale-top{top:calc(27px + env(safe-area-inset-top));left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.12em}.finale-top button{border:1px solid #f5eee7aa;background:#1720198a;color:#fff;min-height:44px;padding:0 11px;font-size:10px}.finale-copy{left:24px;right:24px;bottom:31%;max-width:420px;text-shadow:0 2px 15px #111}.finale-copy p{font-size:11px;letter-spacing:.16em;color:#d9be9d;margin:0 0 13px}.finale-copy h1{font-family:var(--serif);font-size:clamp(35px,9.5vw,52px);line-height:1.35;margin:0 0 17px}.finale-copy span{font-size:12px;line-height:1.6}.finale-actions{left:24px;right:24px;bottom:calc(26px + env(safe-area-inset-bottom));display:flex;align-items:center;flex-wrap:wrap;gap:11px}.finale-actions .ticket-button{flex:0 0 100%;min-height:50px}.finale-actions>button:not(.ticket-button){border:0;border-bottom:1px solid #f0e9d199;background:transparent;color:#f0e9d1;font-size:11px;min-height:35px;padding:0}.finale-screen .sound-toggle{right:18px;bottom:calc(21px + env(safe-area-inset-bottom))}
 
-#transition-veil{position:fixed;inset:0;z-index:20;pointer-events:none;background:#191f1b;opacity:0;visibility:hidden;display:grid;place-items:center}.veil-line{width:1px;height:40%;background:linear-gradient(transparent,#cbb694,transparent)}#notice{position:fixed;z-index:50;left:20px;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));max-width:420px;margin:auto;background:#eee9df;color:#292a27;padding:12px 15px;font-size:12px;opacity:0;transform:translateY(13px);pointer-events:none;transition:opacity .25s,transform .25s}#notice.show{opacity:1;transform:none}
+#transition-veil{position:fixed;inset:0;z-index:20;pointer-events:none;background:#191f1b;opacity:0;visibility:hidden;display:grid;place-items:center}.veil-line{width:1px;height:40%;background:linear-gradient(transparent,#cbb694,transparent)}
 
 #video-layer{position:fixed;inset:0;z-index:30;background:#171d1a;color:#eee9df;display:flex;flex-direction:column}#video-layer[hidden]{display:none}.video-top{height:75px;padding:calc(20px + env(safe-area-inset-top)) 22px 12px;display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.15em}.video-top button{width:44px;height:44px;border:1px solid #eee9df88;background:transparent;color:white;font-size:29px}.video-stage{position:relative;flex:1;min-height:0;background:#252b27;display:grid;place-items:center}.video-stage video{width:100%;height:100%;object-fit:contain}.video-stage button{position:absolute;width:155px;min-height:75px;background:#151916e0;border:1px solid #eee9dfcc;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:19px}.video-stage button[hidden]{display:none}.video-stage button span{font-size:11px}.video-panel{padding:12px 22px calc(25px + env(safe-area-inset-bottom));background:#1e2420}.asset-warning{font-size:10px;letter-spacing:.08em;color:#d59482;margin:0 0 12px}.video-actions{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #eee9df77}.video-actions button{min-height:48px;border:0;border-right:1px solid #eee9df77;background:transparent;color:white;font-size:12px}.video-actions button:last-child{border-right:0}.video-panel>p:last-child{font-size:10px;line-height:1.6;color:#b8b9af;margin:13px 0 0}
 
@@ -898,10 +898,32 @@
 @media(max-width:350px){.room-screen .hud-left{width:165px}.room-screen .hud-right{width:128px}.room-screen .hud-kicker{gap:6px}.room-screen .hud-kicker strong{font-size:13px}.room-screen .hud-kicker .survey-chapter{font-size:21px;min-width:18px}.room-screen .room-hud-side .hud-board{padding-right:9px}.room-screen .hud-book-progress strong{font-size:19px}.room-screen .hud-book-top{font-size:12px}.index-arrow{display:none}.memory-newspaper{inset:9px;padding-left:16px;padding-right:16px}.paper-name h1{font-size:33px}.paper-editorial h2{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.newspaper-pan{transform:none!important;will-change:auto}}
 .room-screen .hud-book-top small{font-family:inherit;font-size:9px;letter-spacing:.07em;color:#82765e}
-#tilt-toggle{position:fixed;z-index:12;left:21px;bottom:calc(20px + env(safe-area-inset-bottom));display:grid;place-items:center;min-width:88px;min-height:40px;padding:0 13px;border:1px solid #d8cbb0;border-radius:22px;background:#fffaf0 url('/assets/scenes/notebook-paper-v4.webp') center/cover;color:#75644a;font:500 11px/1.3 'Noto Sans SC','Microsoft YaHei',sans-serif;letter-spacing:.04em;touch-action:manipulation}
-#tilt-toggle[hidden]{display:none}
-#tilt-toggle[aria-pressed="true"]{color:#a73526}
-#tilt-toggle:disabled{color:#82765e;cursor:default}
-#tilt-toggle:focus-visible{outline:2px solid #a73526;outline-offset:3px}
-@media(max-width:699px){#tilt-toggle{left:13px;bottom:calc(15px + env(safe-area-inset-bottom));min-height:36px;min-width:81px;padding:0 10px;font-size:10px}}
+/* Both switches share a single dock and the same entrance/exit timeline. */
+.scene-controls{position:absolute;z-index:8;right:21px;bottom:calc(20px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:9px}
+.screen .scene-controls .sound-toggle{position:relative;inset:auto;margin:0;flex:none;min-height:40px}
+.screen .scene-controls .tilt-toggle{width:auto;min-width:83px;padding:0 13px}
+.scene-controls .tilt-toggle[hidden]{display:none}
+.scene-controls .tilt-toggle[aria-pressed="true"]>b{color:#a73526}
+.scene-controls .tilt-toggle:disabled{cursor:default;opacity:.65}
+@media(max-width:699px){
+ .scene-controls{right:max(13px,env(safe-area-inset-right));bottom:calc(15px + env(safe-area-inset-bottom));gap:8px}
+ .screen .scene-controls .sound-toggle{min-height:36px}
+ .screen .scene-controls .tilt-toggle{min-width:76px;padding:0 11px}
+ /* Anchor the heading above the doorway, instead of a fixed vh offset. */
+ .portal-panel,.portal-entry{width:min(62vw,250px,39dvh)}
+ .select-copy-panel .select-heading{top:auto;bottom:calc(50% + min(31vw,125px,19.5dvh) * 1312 / 1199 + clamp(22px,4dvh,32px))}
+ .select-copy-panel .select-heading h1{font-size:clamp(28px,min(9.2vw,5.8dvh),39px)}
+ .select-copy-panel .select-heading .chapter-eyebrow{font-size:clamp(7px,1.4dvh,9px)}
+}
+/* Safari can composite the moving wall without re-rendering large SVG filters. */
+@media(pointer:coarse){
+ #camera-rig{filter:none}
+ .masonry-surface{filter:none}
+ .portal-panel>.portal-frame{filter:drop-shadow(0 5px 7px #28221b35)}
+ .portal-scene:after{content:'';position:absolute;inset:0;z-index:1;box-shadow:inset 0 5px 11px #28221b35;pointer-events:none}
+ .foliage-projection i{filter:none;animation:mobile-leaf-drift 9s ease-in-out infinite alternate;will-change:transform}
+ .architectural-shadow i{filter:none;opacity:.8}
+}
+@keyframes mobile-leaf-drift{from{transform:translate3d(-3px,0,0) rotate(-.3deg)}to{transform:translate3d(4px,3px,0) rotate(.4deg)}}
+@media(prefers-reduced-motion:reduce){.foliage-projection i{animation:none}}
 @media(max-width:699px){.room-screen .hud-book-top small{font-size:8px}.record-state,.paper-record:last-child:nth-child(odd) .record-state{font-size:9px}}

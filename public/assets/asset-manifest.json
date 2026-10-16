@@ -482,7 +482,7 @@
       ],
       "verified": false,
       "rights": "user-provided; external publication rights not independently verified",
-      "note": "BGM: outside gain 0.36; inside gain 0.075; 1.1-second volume transition."
+      "note": "Original user-provided recording, retained as source. Runtime uses vintage-travelogue-stream-v46.m4a through a Web Audio GainNode: selection 0.36, scene/finale 0.075."
     },
     {
       "id": "mining-ambience",
@@ -612,7 +612,9 @@
       "type": "audio/mpeg",
       "space": [],
       "category": "artistic-expression",
-      "source": ["user-provided tv-button-hover.mp3"],
+      "source": [
+        "user-provided tv-button-hover.mp3"
+      ],
       "verified": false,
       "rights": "user-provided; external publication rights not independently verified",
       "note": "Both TV entry buttons: pointer hover and keyboard focus. Original recording; child crossings and initial automatic focus do not retrigger it; 45ms release on cancellation."
@@ -623,7 +625,9 @@
       "type": "audio/wav",
       "space": [],
       "category": "artistic-expression",
-      "source": ["user-provided tvon-off.mp3, 0.42-1.98s"],
+      "source": [
+        "user-provided tvon-off.mp3, 0.42-1.98s"
+      ],
       "verified": false,
       "rights": "user-provided; external publication rights not independently verified",
       "note": "1.56s PCM cue with 12ms attack and 180ms release; prepared by scripts/prepare_tv_audio.py."
@@ -634,7 +638,9 @@
       "type": "audio/wav",
       "space": [],
       "category": "artistic-expression",
-      "source": ["user-provided tvon-off.mp3, 0.52-1.52s"],
+      "source": [
+        "user-provided tvon-off.mp3, 0.52-1.52s"
+      ],
       "verified": false,
       "rights": "user-provided; external publication rights not independently verified",
       "note": "1s PCM cue with 12ms attack and 260ms release; tail finishes across the TV/window handoff."
@@ -645,10 +651,32 @@
       "type": "audio/wav",
       "space": [],
       "category": "artistic-expression",
-      "source": ["user-provided tv-low-buzzing.mp3, 0.35-12.10s"],
+      "source": [
+        "user-provided tv-low-buzzing.mp3, 0.35-12.10s"
+      ],
       "verified": false,
       "rights": "user-provided; external publication rights not independently verified",
       "note": "10.55s PCM ambience loop with 1.2s equal-power tail/head overlap; excludes the loud tail transient. Sample-accurate Web Audio loop."
+    },
+    {
+      "id": "vintage-travelogue-stream-v46",
+      "path": "/assets/audio/vintage-travelogue-stream-v46.m4a",
+      "type": "audio/mp4",
+      "space": [
+        "cover",
+        "select",
+        "monument",
+        "worksite",
+        "archive",
+        "finale"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "derived from user-provided Vintage Travelogue.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "AAC 96 kb/s, 44.1 kHz, faststart; same recording, streamed with audio-clock gain and quiet network recovery."
     }
   ]
 }
