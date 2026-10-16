@@ -1,0 +1,10 @@
+id,content,source,date_or_period,verified,page_or_section,usage,rights_status,notes
+course-project,第二章定位为丰碑与铭记并要求纪念碑三维和筑路人讲述,课程课件《设计管理·数字媒体时代的AI内容生成设计与传播》,2026-09,是,PDF第10和16页,章节方向与模型参考,用户提供附件仅供项目参考,课件照片未直接发布
+course-photo,纪念碑正面轮廓与台阶层级,课程课件《设计管理·数字媒体时代的AI内容生成设计与传播》,拍摄年代待核,部分,PDF第16页及碑前空间,三维建模比例参照,影像发布授权待确认,非测绘图纸；模型细部待校准
+neijiang-monument,纪念碑高14米黄砂石质四级叠收；第四级南北面题名；第二级南面1954年7月1日奠基题记,内江广播电视台 https://site.scnj.tv/wap/showplay.php?id=1938901,1954,是,"Chapter III, clues 04 and 05",Text facts; v42 photographic reconstruction based on the course reference,网页照片未使用,字形刻痕截面尺寸及排版待实地校准
+neijiang-labor,筑路曾使用钢钎与大锤且军人与民工共同参与,内江广播电视台 https://site.scnj.tv/wap/showplay.php?id=1938901,1950至1952年,是,"Chapter I, clues 01 and 02",文字事实,仅链接引用未复制影像,参与人数口径暂不进入正文
+neijiang-opening,成渝铁路于1952年7月1日全线通车并留有纪念空间,内江广播电视台 https://site.scnj.tv/wap/showplay.php?id=1938901,1952年,是,"Chapter II, clue 03",文字事实,仅链接引用未复制影像,场景不视为历史现场复原
+sichuan-heritage,成渝铁路筑路民工纪念堂纪念碑列入省级文物保护单位,四川省人民政府 https://www.sc.gov.cn/zfgb/2017/xiazai/2019-03.pdf,2019,是,来源档案,权威性核对,公开政府文件链接,碑体建立年份另据地方资料
+space-art,三处空间背景图,"Built-in imagegen, centered photographic scene set v42",2026-10-17,否,Chapters I-III,"Artistic documentary-style reconstruction, not archival imagery or an exact site",项目生成,"Centered paired rails and back-facing workers; frontal steam locomotive and back-facing crowd; sandstone memorial based on course reference. No cube. Prompts in output/imagegen/scenes-v42/prompts.json"
+stone-texture,纪念碑石材基色,内置imagegen生成,2026-10-13,否,碑前及终章三维模型,"Retired GLB asset, no longer loaded by the application",项目生成,不是真实碑体扫描；已嵌入GLB
+video-demo,视频控制演示占位,项目自行生成 scripts/build_placeholder_video.py,2026,否,筑路现场人物讲述,静音视频与字幕功能测试,项目生成,不是数字人也不是历史口述

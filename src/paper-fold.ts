@@ -1,0 +1,58 @@
+/** A shared newspaper fold, with the current publication printed on its back. */
+export function createPaperFold(paper: HTMLElement) {
+  const fold = document.createElement('div');
+  fold.className = 'paper-fold-stage';
+  fold.setAttribute('aria-hidden', 'true');
+  fold.inert = true;
+  const width = paper.offsetWidth;
+  const height = paper.offsetHeight;
+  Object.assign(fold.style, { left: `${paper.offsetLeft}px`, top: `${paper.offsetTop}px`, width: `${width}px`, height: `${height}px` });
+  fold.style.setProperty('--paper-full-height', `${height}px`);
+  fold.style.setProperty('--paper-half-height', `${height / 2}px`);
+  const copy = () => {
+    const clone = paper.cloneNode(true) as HTMLElement;
+    clone.classList.add('fold-copy');
+    clone.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+    return clone;
+  };
+  const top = document.createElement('div');
+  top.className = 'fold-top';
+  top.append(copy());
+  const bottom = document.createElement('div');
+  bottom.className = 'fold-bottom';
+  const front = document.createElement('div');
+  front.className = 'fold-front';
+  front.append(copy());
+  const back = document.createElement('div');
+  back.className = 'fold-back';
+  const label = document.createElement('span');
+  label.textContent = paper.dataset.foldLabel ?? '建设者档案 / 记忆专刊';
+  const edition = document.createElement('header');
+  edition.className = 'fold-edition';
+  const issue = document.createElement('span');
+  issue.textContent = paper.dataset.foldEdition ?? '第二章';
+  edition.append(label, issue);
+  const title = document.createElement('strong');
+  title.textContent = paper.dataset.foldTitle ?? '成渝记忆';
+  const titleBlock = document.createElement('div');
+  titleBlock.className = 'fold-title-block';
+  titleBlock.append(title);
+  const note = document.createElement('p');
+  note.textContent = paper.dataset.foldNote ?? '从开山筑路，走到纪念碑前。';
+  const frontmatter = document.createElement('div');
+  frontmatter.className = 'fold-frontmatter';
+  frontmatter.append(titleBlock, note);
+  const imprint = document.createElement('footer');
+  imprint.className = 'fold-imprint';
+  const progress = document.createElement('span');
+  progress.textContent = paper.dataset.foldProgress ?? '建设者记忆';
+  const series = document.createElement('span');
+  series.textContent = '丰碑与铭记';
+  imprint.append(progress, series);
+  back.append(edition, frontmatter, imprint);
+  bottom.append(front, back);
+  fold.append(top, bottom);
+  paper.parentElement!.append(fold);
+  fold.querySelectorAll<HTMLElement>('.fold-copy').forEach(clone => { clone.scrollTop = paper.scrollTop; });
+  return { fold, bottom, height };
+}

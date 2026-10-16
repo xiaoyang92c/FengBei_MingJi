@@ -1,0 +1,80 @@
+/* The final broadcast shares the opening's glass, phosphor and on-screen menu. */
+#view .tv-finale{display:block;inset:0;padding:0;border-radius:0;overflow:hidden;background:#030805;color:#c7dcaa}
+#view .tv-finale:after{display:none}
+.tv-finale .finale-signal{--finale-edge-y:clamp(30px,4.5vh,48px);justify-content:flex-start;gap:0;padding:var(--finale-edge-y) clamp(30px,6vw,84px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.finale-signal::-webkit-scrollbar{display:none}
+.tv-finale .crt-heading{flex:none;font-family:Consolas,'Courier New',monospace;font-size:9px}
+.finale-program{display:flex;flex:1 0 auto;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:clamp(19px,3.4vh,34px) 0 21px;text-align:center}
+.finale-era{margin:0 0 18px;font-size:9px;line-height:1.6;letter-spacing:.13em;color:#8fa879}
+#view .finale-title{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;color:#cfe3b2;font-size:clamp(35px,4.9vw,65px);font-weight:650;line-height:1.45;letter-spacing:.075em;text-shadow:0 0 5px #a0d07b3d}
+#view .finale-title>strong{font:inherit;font-weight:800;color:#dbecc2;white-space:nowrap}
+.finale-broadcast-copy{display:flex;flex-direction:column;gap:4px;margin:17px 0 0;font-size:11px;line-height:1.85;letter-spacing:.04em;color:#a3b68b}
+.finale-credits{display:grid;grid-template-columns:max-content 124px max-content;justify-content:center;align-items:center;gap:12px;width:max-content;max-width:100%;margin:22px 0 0;padding:0;border:0;color:#96ad7f}
+.finale-credits>span{font-size:8px;letter-spacing:.11em;white-space:nowrap}
+.finale-credit-window{height:28px;overflow:hidden;min-width:0;text-align:center;mask-image:linear-gradient(180deg,transparent,#000 20%,#000 80%,transparent)}
+.finale-credit-roll>p{display:flex;align-items:center;justify-content:center;gap:12px;height:28px;margin:0;font-size:11px;line-height:1;letter-spacing:.08em;color:#c1d6a5}
+.finale-credit-roll b{font:400 10px/1 Consolas,'Courier New',monospace;color:#789562}
+.finale-inscription{margin:17px 0 0;font-size:10px;line-height:1.8;letter-spacing:.16em;color:#9bb086}
+.finale-endmark{margin-top:18px;padding-left:.38em;font-size:20px;font-weight:600;line-height:1.4;letter-spacing:.38em;color:#d5e7b8;text-shadow:0 0 5px #a0d07b3d}
+.tv-finale .finale-menu{align-self:center;flex:none;width:min(355px,100%);margin:0 0 17px}
+.tv-finale .crt-menu-heading{padding-left:29px;font-size:8px}
+.tv-finale .crt-entry{min-height:61px}
+.tv-finale .crt-entry-copy>b{font-size:16px}
+.tv-finale .crt-entry-copy>small{font-size:8px;letter-spacing:.05em}
+.tv-finale .crt-entry-state{font-size:9px}
+.tv-finale .crt-entry-list{gap:5px}
+.finale-footer{display:flex;flex:none;flex-direction:column;align-items:center;gap:11px;font-size:8px;line-height:1.7;letter-spacing:.04em;color:#7f996c;text-align:center}
+.finale-tools{display:flex;align-items:center;justify-content:center;gap:26px}
+.finale-tools>button{min-height:30px;padding:3px 0;border:0;border-bottom:1px solid #8fa87950;background:none;color:#a4bc8d;font-size:9px;line-height:1.5;letter-spacing:.08em}
+.finale-tools>button:focus-visible{outline:1px solid #c6dca2;outline-offset:4px}
+.finale-tools>button:hover{color:#d6ebba}
+.finale-tools>button:disabled{opacity:1;cursor:default}
+@media(max-width:699px){
+  .tv-finale .finale-signal{--finale-edge-y:calc(clamp(28px,4.5svh,42px) + max(env(safe-area-inset-top),env(safe-area-inset-bottom)));padding:var(--finale-edge-y) 25px}
+  .tv-finale .crt-heading{font-size:7px;gap:12px}
+  .finale-program{padding:24px 0 20px}
+  .finale-era{font-size:7px;margin-bottom:18px;letter-spacing:.06em}
+  #view .finale-title{font-size:clamp(25px,7.2vw,43px);letter-spacing:.045em;gap:5px}
+  .finale-broadcast-copy{font-size:9px;line-height:1.85;letter-spacing:0;margin-top:15px;gap:3px}
+  .finale-broadcast-copy .crt-glyph-run{white-space:normal}
+  .finale-credits{gap:9px;padding:0;margin-top:20px}
+  .finale-credits>span{font-size:7px;letter-spacing:.04em}
+  .finale-credit-roll>p{font-size:10px;gap:11px}
+  .finale-inscription{font-size:8px;letter-spacing:.1em;margin-top:15px}
+  .finale-endmark{font-size:18px;margin-top:17px}
+  .tv-finale .finale-menu{width:min(305px,100%);margin-bottom:13px}
+  .tv-finale .crt-entry{min-height:57px}
+  .tv-finale .crt-entry-copy>b{font-size:14px}
+  .tv-finale .crt-entry-copy>small{font-size:7px}
+  .tv-finale .crt-entry-number,.tv-finale .crt-entry-state{font-size:8px}
+  .finale-footer{font-size:6px;gap:9px}
+  .finale-tools>button{font-size:8px}
+}
+@media(max-height:660px){
+  .tv-finale .finale-signal{--finale-edge-y:20px;padding-top:var(--finale-edge-y);padding-bottom:var(--finale-edge-y)}
+  .finale-program{padding:16px 0}
+  .finale-era{margin-bottom:11px}
+  #view .finale-title{font-size:clamp(25px,4.3vw,43px);line-height:1.3}
+  .finale-broadcast-copy{margin-top:12px;font-size:9px;line-height:1.65}
+  .finale-credits{margin-top:13px}
+  .finale-inscription{margin-top:11px}
+  .finale-endmark{margin-top:10px;font-size:17px}
+  .tv-finale .crt-entry{min-height:48px}
+  .tv-finale .finale-menu{margin-bottom:9px}
+  .finale-footer{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  .tv-finale .finale-credit-window{height:auto;mask-image:none}
+  .tv-finale .finale-credit-roll>p:last-child{display:none}
+}
+
+.finale-credits>span:first-child{text-align:left}
+.finale-credits>span:last-child{text-align:right}
+.tv-finale .crt-key-hint{margin:13px 0 0;min-height:18px;font-size:8px}
+.tv-finale .crt-raster{opacity:.59}
+.tv-finale .crt-snow{opacity:.045}
+#view .tv-finale.is-over-paper{background:transparent}
+.tv-finale.is-over-paper .crt-glass{background:transparent}
+.tv-finale .crt-glass{inset:0;z-index:1;border-radius:0}
+#view .finale-paper-underlay{position:absolute;inset:0;z-index:0;pointer-events:none}
+@media(max-height:660px){.tv-finale .crt-key-hint{margin-top:8px;min-height:14px;font-size:7px}}

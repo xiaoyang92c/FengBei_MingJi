@@ -1,0 +1,93 @@
+/* The folded face reads as a small newspaper front, shared by both publications. */
+.paper-fold-stage .fold-back{display:flex;flex-direction:column;justify-content:space-between;gap:18px;padding:clamp(24px,4vw,48px);color:var(--press-ink)}
+.fold-edition,.fold-imprint{display:flex;align-items:baseline;justify-content:space-between;gap:18px;font-size:10px;line-height:1.7;letter-spacing:.08em;color:#796c54}
+.fold-edition>span:last-child{flex:none;white-space:nowrap}
+.fold-frontmatter{display:flex;flex-direction:column;gap:17px;width:100%;margin:auto 0;text-align:center}
+.fold-title-block{padding:20px 0 22px;border-top:var(--control-stroke) solid var(--press-ink);border-bottom:var(--control-stroke) solid var(--press-ink)}
+.fold-title-block>strong{display:block;font-size:clamp(34px,5.7vw,72px);font-weight:800;line-height:1.22;letter-spacing:.07em;text-indent:.07em;color:var(--press-red)}
+.fold-frontmatter>p{margin:0 auto;max-width:29em;font-size:12px;line-height:1.85;letter-spacing:.06em;color:#6e6049}
+.fold-imprint{font-size:9px;letter-spacing:.08em}
+.fold-imprint>span:first-child{color:var(--press-red)}
+/* Only the publication line remains fixed above the field sheet. */
+.paper-screen .field-notes.chapter-sheet{inset:20px max(20px,calc((100vw - 1060px)/2));padding:0 clamp(28px,4.4vw,56px) 28px;background-color:var(--press-paper);scroll-padding-top:80px;isolation:isolate}
+.field-notes .survey-top{position:sticky;top:0;z-index:8;display:block;padding:0;border-bottom:var(--control-stroke) solid #8e795970;background:var(--press-paper) url('/assets/scenes/notebook-paper-v4.webp') center/760px;font-weight:500;letter-spacing:.04em}
+.survey-topline{display:flex;align-items:center;gap:18px;min-height:61px}
+.survey-publication{display:flex;align-items:baseline;gap:13px;min-width:0}
+.survey-publication>span{font-size:13px;font-weight:700;color:var(--press-ink);white-space:nowrap}
+.survey-publication>small{font-size:10px;color:#796c54;white-space:nowrap}
+.survey-count{margin-left:auto;font-size:10px;color:var(--press-red);white-space:nowrap}
+.field-notes .survey-top .paper-close{width:34px;height:34px;border:var(--control-stroke) solid #8e795970}
+.field-notes button:focus-visible{outline:var(--control-stroke) dashed var(--press-red);outline-offset:4px}
+.field-notes :is(#survey-front,#survey-observations){scroll-margin-top:80px}
+.field-notes section:focus{outline:0}
+.field-notes .survey-title{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:13px;padding:32px 0 30px;border-bottom:var(--control-stroke) solid #8e795970;text-align:center}
+.field-notes .survey-title-meta{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-size:9px;line-height:1.6;letter-spacing:.12em;color:#796c54}
+.survey-title-meta:before,.survey-title-meta:after{content:"";width:26px;height:var(--control-stroke);background:#8e795970}
+.survey-title-meta>span{font-size:9px;font-weight:500}
+.survey-title-meta>b{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--press-red)}
+.field-notes .survey-title p{margin:0;font-size:12px;line-height:1.9;letter-spacing:.045em;color:#796c54}
+.field-notes .survey-title h1{margin:0;font-size:44px;font-weight:800;line-height:1.25;letter-spacing:.1em;padding-left:.1em}
+.field-notes .survey-layout{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);align-items:center;gap:30px;margin:26px 0 33px}
+.field-notes .survey-kicker{display:block;font-size:10px;line-height:1.6;letter-spacing:.1em;color:var(--press-red)}
+.field-notes .survey-instructions h2{font-size:25px;font-weight:750;line-height:1.5;letter-spacing:-.015em;margin:12px 0}
+.field-notes .survey-instructions>p{font-size:12px;line-height:1.95;color:#6b604c;margin:0}
+.field-notes .survey-observations{border-top:var(--control-stroke) solid #8e795980}
+.survey-section-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:21px 0 7px}
+.field-notes .survey-section-heading>h2{margin:0;padding:0;border:0;font-size:22px;line-height:1.5;font-weight:700}
+.survey-section-heading>span{font-size:10px;color:#796c54;white-space:nowrap}
+.field-notes .survey-observation{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;padding:23px 0;border:0;border-bottom:var(--control-stroke) solid #8e79594a;background:none;overflow:visible}
+.field-notes .survey-observation-meta{display:flex;align-items:center;justify-content:space-between;gap:15px;min-height:18px;padding:0;color:var(--press-red);font-size:14px;line-height:1.4}
+.survey-observation-meta>i{font-style:normal;font-weight:600;letter-spacing:.025em}
+.survey-observation-meta>small{font-size:9px;line-height:1.5;font-weight:500;color:#8e7959}
+.field-notes .survey-observation-heading{position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:37px;color:var(--press-ink);isolation:isolate}
+.field-notes .survey-observation-heading>strong{font-size:24px;font-weight:750;line-height:1.4;color:inherit;transition:color .25s}
+.survey-observation-arrow{display:grid;place-items:center;flex:none;width:28px;height:28px;border:var(--control-stroke) solid #a2372770;background:none;color:var(--press-red);transition:background-color .25s,color .25s}
+.survey-observation-arrow>svg{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5}
+.field-notes .survey-observation-deck{display:block;padding:0;font-size:12px;line-height:1.95;color:#6b604c;max-width:45em}
+.field-notes .survey-observation:is(:hover,:focus-visible,.is-opening) .survey-observation-heading{color:var(--press-red)}
+.field-notes .survey-observation:is(:hover,:focus-visible,.is-opening) .survey-observation-arrow{background:var(--press-red);color:var(--press-paper)}
+.field-notes .survey-observation.is-opening .pencil-wash path{stroke-dashoffset:0}
+.field-notes .survey-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:0;padding-top:23px;border:0;color:#8e7e63}
+.field-notes .survey-footer>span{font-size:9px;line-height:1.8;letter-spacing:.04em}
+@media(max-width:799px){
+  .field-notes .survey-layout{grid-template-columns:1fr;gap:24px}
+}
+@media(max-width:699px){
+  .paper-fold-stage .fold-back{padding:24px;gap:16px}
+  .fold-edition{font-size:8px;gap:12px;letter-spacing:.04em}
+  .fold-title-block{padding:17px 0 19px}
+  .fold-title-block>strong{font-size:clamp(32px,8.7vw,56px)}
+  .fold-frontmatter{gap:13px}.fold-frontmatter>p{font-size:10px;line-height:1.8}
+  .fold-imprint{font-size:8px;letter-spacing:.04em}
+  .paper-screen .field-notes.chapter-sheet{inset:12px;padding:0 20px 24px;scroll-padding-top:72px}
+  .survey-topline{min-height:55px;gap:12px}
+  .survey-publication{gap:10px}.survey-publication>span{font-size:12px}.survey-publication>small{font-size:9px}
+  .survey-count{font-size:9px}
+  .field-notes .survey-top .paper-close{width:30px;height:30px}
+  .field-notes :is(#survey-front,#survey-observations){scroll-margin-top:72px}
+  .field-notes .survey-title{padding:27px 0 26px;gap:12px}
+  .field-notes .survey-title p{font-size:11px;margin:0}
+  .field-notes .survey-title h1{font-size:37px}
+  .field-notes .survey-layout{margin:23px 0 28px;gap:23px}
+  .field-notes .survey-kicker{font-size:9px}
+  .field-notes .survey-instructions h2{font-size:23px;margin:10px 0 11px}
+  .field-notes .survey-instructions>p{font-size:12px}
+  .survey-section-heading{padding:20px 0 4px}
+  .field-notes .survey-section-heading>h2{font-size:20px}.survey-section-heading>span{font-size:9px}
+  .field-notes .survey-observation{padding:21px 0;gap:9px}
+  .field-notes .survey-observation-heading>strong{font-size:23px}
+  .field-notes .survey-observation-deck{font-size:11px}
+  .field-notes .survey-footer{gap:12px;padding-top:20px}.field-notes .survey-footer>span{font-size:8px}
+}
+@media(max-width:350px){
+  .paper-screen .field-notes.chapter-sheet{inset:9px;padding-left:16px;padding-right:16px}
+  .survey-publication>small{display:none}
+  .field-notes .survey-title h1{font-size:31px}
+  .paper-fold-stage .fold-back{padding:19px}
+}
+@media(max-height:540px){
+  .paper-fold-stage .fold-back{padding:13px 22px;gap:9px}
+  .fold-edition,.fold-imprint{font-size:8px}
+  .fold-frontmatter{gap:8px}.fold-title-block{padding:9px 0 11px}
+  .fold-title-block>strong{font-size:28px}.fold-frontmatter>p{font-size:9px;line-height:1.6}
+}

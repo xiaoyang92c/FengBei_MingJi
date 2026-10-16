@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>丰碑与铭记</title>
+  <g fill="none" stroke="#786d58" stroke-width="3" stroke-linecap="square">
+    <path d="M24 48 13 60M40 48 51 60M19 55h26M15 59h34"/>
+  </g>
+  <path fill="#a73526" d="m32 6 6 7H26zm-9 8h18v6h-3v21h4v6h5v7H17v-7h5v-6h4V20h-3z"/>
+  <path d="M31 24v12" fill="none" stroke="#f2ead8" stroke-width="2"/>
+</svg>

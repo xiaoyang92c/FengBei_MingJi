@@ -1,0 +1,654 @@
+{
+  "version": "43.0.0-responsive-scene-compositions",
+  "assets": [
+    {
+      "id": "worksite-space-desktop",
+      "path": "/assets/scenes/worksite-wide-v43.webp",
+      "type": "image/webp",
+      "space": [
+        "worksite"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen",
+        "existing:v41-landscape-generation"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Original landscape generation: centered rail cutting and back-facing workers with tools. Native 1672x941; WebP quality 95. Used for wide desktop viewports in portal and room; mobile keeps v42. Source PNG in output/imagegen/scenes-v43-desktop/. No new image generation for v43."
+    },
+    {
+      "id": "archive-space-desktop",
+      "path": "/assets/scenes/opening-wide-v43.webp",
+      "type": "image/webp",
+      "space": [
+        "archive"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen",
+        "existing:v41-landscape-generation"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Original landscape generation: frontal centered steam locomotive and back-facing platform crowd. Native 1672x941; WebP quality 95. Used for wide desktop viewports in portal and room; mobile keeps v42. Source PNG in output/imagegen/scenes-v43-desktop/. No new image generation for v43."
+    },
+    {
+      "id": "monument-space-desktop",
+      "path": "/assets/scenes/memorial-wide-v43.webp",
+      "type": "image/webp",
+      "space": [
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen",
+        "existing:v41-landscape-generation"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Original landscape generation based on the course monument reference. No people. No model or cube. Native 1672x941; WebP quality 95. Used for wide desktop viewports in portal and room; mobile keeps v42. Source PNG in output/imagegen/scenes-v43-desktop/. No new image generation for v43."
+    },
+    {
+      "id": "monument-model",
+      "path": "/assets/model/chengyu-monument.glb",
+      "type": "model/gltf-binary",
+      "space": [],
+      "category": "reconstruction",
+      "source": [
+        "course:slide-16",
+        "neijiang"
+      ],
+      "verified": "partial",
+      "rights": "project-generated",
+      "note": "Retired from runtime in v17. Retained as a previous design study. The active memorial space uses a centered photographic reconstruction in v42; no model or cube is rendered."
+    },
+    {
+      "id": "monument-fallback",
+      "path": "/assets/model/monument-fallback-v5.png",
+      "type": "image/png",
+      "space": [],
+      "category": "reconstruction",
+      "source": [
+        "monument-model"
+      ],
+      "verified": "partial",
+      "rights": "project-generated",
+      "note": "Retired from runtime in v17. Retained as a previous design study. The active memorial space uses a centered photographic reconstruction in v42; no model or cube is rendered."
+    },
+    {
+      "id": "inscription-reading-v4",
+      "path": "/assets/model/inscription-panel-v4.png",
+      "type": "image/png",
+      "space": [],
+      "category": "reconstruction",
+      "source": [
+        "neijiang"
+      ],
+      "verified": "wording-only",
+      "rights": "project-generated",
+      "note": "Retired from runtime in v17. Retained as a previous design study. The active memorial space uses a centered photographic reconstruction in v42; no model or cube is rendered."
+    },
+    {
+      "id": "foundation-reading-v4",
+      "path": "/assets/model/foundation-reading-v4.png",
+      "type": "image/png",
+      "space": [],
+      "category": "reconstruction",
+      "source": [
+        "neijiang"
+      ],
+      "verified": "wording-only",
+      "rights": "project-generated",
+      "note": "Retired from runtime in v17. Retained as a previous design study. The active memorial space uses a centered photographic reconstruction in v42; no model or cube is rendered."
+    },
+    {
+      "id": "monument-space",
+      "path": "/assets/scenes/memorial-real-v42.webp",
+      "type": "image/webp",
+      "space": [
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen",
+        "neijiang"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Built-in imagegen photographic reconstruction, native 1254x1254, WebP quality 95. Centered slender yellow-sandstone memorial and four receding stages based on the course reference photo and Neijiang wording. Garden morning ambience; no people. Shared focal point 50%,56.5% in portal and room. Not a site photograph or measured reconstruction. Prompts: output/imagegen/scenes-v42/prompts.json."
+    },
+    {
+      "id": "worksite-space",
+      "path": "/assets/scenes/worksite-real-v42.webp",
+      "type": "image/webp",
+      "space": [
+        "worksite"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen",
+        "neijiang"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Built-in imagegen photographic reconstruction, native 1254x1254, WebP quality 95. Straight centered paired rails in a sandstone cutting; back-facing laborers with steel chisels and hammers, matching the worksite sound mix. Not an archival photograph or an exact historic site. Prompts: output/imagegen/scenes-v42/prompts.json."
+    },
+    {
+      "id": "archive-space",
+      "path": "/assets/scenes/opening-real-v42.webp",
+      "type": "image/webp",
+      "space": [
+        "archive"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen",
+        "neijiang"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Built-in imagegen photographic reconstruction, native 1254x1254, WebP quality 95. Frontal steam locomotive centered over straight rails, 1950s station and back-facing crowd, matching train and crowd sound layers. Not an archival photograph or an exact historic site. Prompts: output/imagegen/scenes-v42/prompts.json."
+    },
+    {
+      "id": "narrator-video",
+      "path": "/assets/video/narrator-placeholder.mp4",
+      "poster": "/assets/video/narrator-poster.jpg",
+      "subtitle": "/assets/video/placeholder.vtt",
+      "type": "video/mp4",
+      "space": [
+        "worksite"
+      ],
+      "category": "placeholder",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "16 秒静音功能演示，不是历史口述或数字人证言。"
+    },
+    {
+      "id": "limestone-v3",
+      "path": "/assets/model/limestone-v3.jpg",
+      "type": "image/jpeg",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired from runtime in v17. Retained as a previous design study. The active memorial space uses a centered photographic reconstruction in v42; no model or cube is rendered."
+    },
+    {
+      "id": "notebook-paper-v4",
+      "path": "/assets/scenes/notebook-paper-v4.webp",
+      "type": "image/webp",
+      "space": [
+        "notebook"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "内置 imagegen 生成的无文字纸张纹理；非真实档案。"
+    },
+    {
+      "id": "portal-wall-v5",
+      "path": "/assets/scenes/portal-wall-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Source stone texture for the single wide moving wall."
+    },
+    {
+      "id": "portal-wall-long-v7",
+      "path": "/assets/scenes/portal-wall-long-v7.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "portal-wall-v5"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired v7 wall. Preserved for comparison; the selection screen uses v10."
+    },
+    {
+      "id": "tree-shadow-v5",
+      "path": "/assets/scenes/tree-shadow-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Transparent animated tree-shadow overlay, separate from wall."
+    },
+    {
+      "id": "tree-shadow-long-v8",
+      "path": "/assets/scenes/tree-shadow-long-v8.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "tree-shadow-v5"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired v8 shadow. Preserved for comparison; the selection screen uses v10."
+    },
+    {
+      "id": "portal-wall-long-v9",
+      "path": "/assets/scenes/portal-wall-long-v9.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "portal-wall-v5"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Source panorama for v10, with smaller stone blocks assembled by deterministic patch quilting."
+    },
+    {
+      "id": "tree-shadow-long-v9",
+      "path": "/assets/scenes/tree-shadow-long-v9.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "tree-shadow-v5"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired shadow with three separate variants; preserved for comparison."
+    },
+    {
+      "id": "portal-wall-long-v10",
+      "path": "/assets/scenes/portal-wall-long-v10.webp",
+      "type": "image/webp",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "portal-wall-long-v9"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired from runtime in v20. Preserved as an earlier visual study."
+    },
+    {
+      "id": "tree-shadow-long-v10",
+      "path": "/assets/scenes/tree-shadow-long-v10.webp",
+      "type": "image/webp",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "tree-shadow-v5"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired from runtime in v20. Preserved as an earlier visual study."
+    },
+    {
+      "id": "tree-shadow-long-mobile-v10",
+      "path": "/assets/scenes/tree-shadow-long-mobile-v10.webp",
+      "type": "image/webp",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "tree-shadow-v5"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired from runtime in v20. Preserved as an earlier visual study."
+    },
+    {
+      "id": "sicuan-bgm",
+      "path": "/assets/audio/sicuan-bgm.m4a",
+      "type": "audio/mp4",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided sicuan.m4a"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Retired from runtime in v33; replaced by user-provided Vintage Travelogue.mp3."
+    },
+    {
+      "id": "portal-monument-v5",
+      "path": "/assets/scenes/portal-monument-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Transparent timber memorial doorway with alpha opening."
+    },
+    {
+      "id": "portal-worksite-v5",
+      "path": "/assets/scenes/portal-worksite-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "worksite"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Transparent rough timber worksite doorway with alpha opening."
+    },
+    {
+      "id": "portal-archive-v5",
+      "path": "/assets/scenes/portal-archive-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "archive"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Transparent institutional archive doorway with alpha opening."
+    },
+    {
+      "id": "gallery-monument-v5",
+      "path": "/assets/scenes/gallery-monument-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "monument",
+        "finale"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired visual concept. Preserved for provenance and comparison; not loaded in the current experience."
+    },
+    {
+      "id": "gallery-worksite-v5",
+      "path": "/assets/scenes/gallery-worksite-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "worksite"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired visual concept. Preserved for provenance and comparison; not loaded in the current experience."
+    },
+    {
+      "id": "gallery-archive-v5",
+      "path": "/assets/scenes/gallery-archive-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "archive"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired visual concept. Preserved for provenance and comparison; not loaded in the current experience."
+    },
+    {
+      "id": "portal-view-monument-v5",
+      "path": "/assets/scenes/portal-view-monument-v5.webp",
+      "type": "image/webp",
+      "space": [
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired visual concept. Preserved for provenance and comparison; not loaded in the current experience."
+    },
+    {
+      "id": "portal-wall-relief-v20",
+      "path": "/assets/scenes/portal-wall-relief-v20.webp",
+      "type": "image/webp",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Retired from runtime in v22. Preserved as the preceding dense masonry study."
+    },
+    {
+      "id": "foliage-projection-v19",
+      "path": "/assets/scenes/foliage-projection-v19.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Generated transparent tree shadow. One projection spans Chapter I and the left edge of Chapter II; Chapter III uses a CSS architectural shadow. Prompt in docs/visual-motion-v20.md."
+    },
+    {
+      "id": "portal-wall-balanced-v22",
+      "path": "/assets/scenes/portal-wall-balanced-v22.webp",
+      "type": "image/webp",
+      "space": [
+        "select"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "built-in:imagegen"
+      ],
+      "verified": false,
+      "rights": "project-generated",
+      "note": "Medium dressed limestone blocks with pale narrow joints of varied depth. Prompt and sampling details in docs/visual-motion-v22.md."
+    },
+    {
+      "id": "vintage-travelogue",
+      "path": "/assets/audio/vintage-travelogue.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "cover",
+        "select",
+        "monument",
+        "worksite",
+        "archive",
+        "finale"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided Vintage Travelogue.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "BGM: outside gain 0.36; inside gain 0.075; 1.1-second volume transition."
+    },
+    {
+      "id": "mining-ambience",
+      "path": "/assets/audio/mining-ambience.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "worksite"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided mining-ambience.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Independent mining layer; original file, 1.7-second equal-power loop overlap, slow dynamic gain."
+    },
+    {
+      "id": "crowd-noise",
+      "path": "/assets/audio/crowd-noise.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "worksite"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided crowd-noise.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Independent crowd layer; original file, 1.4-second equal-power loop overlap, separate slow dynamic gain."
+    },
+    {
+      "id": "old-train",
+      "path": "/assets/audio/old-train.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "archive"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided old-train.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Original train recording; 2.8-second equal-power loop overlap."
+    },
+    {
+      "id": "ui-travel-wind",
+      "path": "/assets/audio/ui-travel-wind.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "worksite",
+        "archive",
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided 穿梭风声.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Scene entry/exit, quieter window slides. Original file copied without re-encoding; follows the sound switch."
+    },
+    {
+      "id": "ui-paper-open",
+      "path": "/assets/audio/ui-paper-open.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "worksite",
+        "archive",
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided 打开报纸.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Notebook, field notes and clue opening; replaces synthesized paper sound. Original file copied without re-encoding; follows the sound switch."
+    },
+    {
+      "id": "ui-pencil-hover",
+      "path": "/assets/audio/ui-pencil-hover.mp3",
+      "type": "audio/mpeg",
+      "space": [
+        "worksite",
+        "archive",
+        "monument"
+      ],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided 铅笔-ui悬停.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Pencil-wash hover, keyboard focus and touch feedback. Original file copied without re-encoding; follows the sound switch."
+    },
+    {
+      "id": "tv-power",
+      "path": "/assets/audio/tvon-off.mp3",
+      "type": "audio/mpeg",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided tvon-off.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Original 2.064-second source retained. Runtime uses cropped, faded tv-power-on.wav and tv-power-off.wav."
+    },
+    {
+      "id": "tv-low-buzzing",
+      "path": "/assets/audio/tv-low-buzzing.mp3",
+      "type": "audio/mpeg",
+      "space": [],
+      "category": "artistic-expression",
+      "source": [
+        "user-provided tv-low-buzzing.mp3"
+      ],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Original 13.56-second source retained. Runtime uses tv-buzz-loop.wav, excluding the transient near 13.15s and crossfading the seam."
+    },
+    {
+      "id": "tv-button-hover",
+      "path": "/assets/audio/tv-button-hover.mp3",
+      "type": "audio/mpeg",
+      "space": [],
+      "category": "artistic-expression",
+      "source": ["user-provided tv-button-hover.mp3"],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "Both TV entry buttons: pointer hover and keyboard focus. Original recording; child crossings and initial automatic focus do not retrigger it; 45ms release on cancellation."
+    },
+    {
+      "id": "tv-power-on",
+      "path": "/assets/audio/tv-power-on.wav",
+      "type": "audio/wav",
+      "space": [],
+      "category": "artistic-expression",
+      "source": ["user-provided tvon-off.mp3, 0.42-1.98s"],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "1.56s PCM cue with 12ms attack and 180ms release; prepared by scripts/prepare_tv_audio.py."
+    },
+    {
+      "id": "tv-power-off",
+      "path": "/assets/audio/tv-power-off.wav",
+      "type": "audio/wav",
+      "space": [],
+      "category": "artistic-expression",
+      "source": ["user-provided tvon-off.mp3, 0.52-1.52s"],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "1s PCM cue with 12ms attack and 260ms release; tail finishes across the TV/window handoff."
+    },
+    {
+      "id": "tv-buzz-loop",
+      "path": "/assets/audio/tv-buzz-loop.wav",
+      "type": "audio/wav",
+      "space": [],
+      "category": "artistic-expression",
+      "source": ["user-provided tv-low-buzzing.mp3, 0.35-12.10s"],
+      "verified": false,
+      "rights": "user-provided; external publication rights not independently verified",
+      "note": "10.55s PCM ambience loop with 1.2s equal-power tail/head overlap; excludes the loud tail transient. Sample-accurate Web Audio loop."
+    }
+  ]
+}

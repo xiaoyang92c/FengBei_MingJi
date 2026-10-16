@@ -1,0 +1,21 @@
+{
+  "name": "fengbei-yu-mingji",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "model": "python scripts/build_monument.py"
+  },
+  "dependencies": {
+    "gsap": "^3.14.2",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.180.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7"
+  }
+}

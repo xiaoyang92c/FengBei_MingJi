@@ -1,0 +1,39 @@
+/* Photographic records: a paper edge, worn emulsion, and an event date. */
+#view .memory-photo{position:relative;display:block;align-self:center;margin:0;padding:9px;border:var(--control-stroke) solid #8e795957;background:#e9e2cf;transform:none;box-shadow:none!important;isolation:isolate}
+#view .memory-photo .photo-print{position:relative;overflow:hidden;background:#736752}
+#view .memory-photo img{display:block;width:100%;height:auto;aspect-ratio:1.6;object-fit:cover;border:0;padding:0;background:none;filter:sepia(.3) saturate(.62) contrast(.97) brightness(.98);transform-origin:center}
+.photo-patina{position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 49% 46%,transparent 37%,#22261a44 100%),linear-gradient(125deg,#d9cba61a,transparent 35%,#e9d4a810 70%,transparent),url('/assets/scenes/notebook-paper-v4.webp') center/450px;mix-blend-mode:soft-light;opacity:.7}
+#view .memory-photo .photo-date{position:absolute;z-index:2;top:auto;right:12px;bottom:12px;display:block;padding:0;border:0;background:none;color:#f36a4d;font-family:Consolas,'Courier New',monospace!important;font-size:12px;font-weight:500;letter-spacing:.04em;font-variant-numeric:lining-nums tabular-nums;white-space:nowrap;pointer-events:none;line-height:1;transform:none;box-shadow:none!important}
+#view .dispatch-photo{width:100%;margin:3px 0 28px;transform:none}
+#view .dispatch-photo img{aspect-ratio:1.9;max-height:330px}
+#view .survey-image{width:100%;padding:9px}
+.dispatch-figure figcaption{text-align:right}
+/* The notebook ends with an open invitation, then the dedicated closing page. */
+.press-ending{margin-top:30px;padding:26px 0 4px;scroll-margin-top:30px;color:var(--press-ink)}
+.ending-label{display:block;font-size:10px;letter-spacing:.12em;color:var(--press-red)}
+.ending-rule{height:1px;background:var(--press-red);margin:13px 0 22px;transform-origin:left}
+.press-ending>h2{font-size:clamp(29px,3.8vw,45px);line-height:1.4;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+.press-ending>p{font-size:13px;line-height:1.9;margin:0 0 20px;color:#7a6850}
+.press-ending>button{display:flex;align-items:center;justify-content:space-between;gap:30px;min-width:190px;min-height:48px;padding:0 16px;border:var(--control-stroke) solid var(--press-red);background:transparent;color:var(--press-red);font-size:13px;font-weight:700}
+.press-ending>button>b{font-size:24px;font-weight:400}
+.press-ending>button:disabled{color:#9e8f76;border-color:#b5a58b}
+/* System notices only; collection progress stays in the scene and notebook. */
+#notice{display:flex;flex-direction:column;align-items:center;gap:0;max-width:340px;padding:18px 24px 19px;border:var(--control-stroke) solid #8e79597a;border-radius:0;background:var(--press-paper) url('/assets/scenes/notebook-paper-v4.webp') center/600px;color:var(--press-ink);text-align:center;visibility:hidden;opacity:0;box-shadow:none;overflow:hidden;transition:opacity .25s,transform .25s,visibility .25s}
+#notice.show{opacity:1;visibility:visible}
+.notice-heading{display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;line-height:1.6;letter-spacing:.16em;text-indent:.16em;color:var(--press-red)}
+#notice .notice-message{width:100%;margin:8px 0 0;font-size:13px;font-weight:400;line-height:1.7;color:var(--press-ink);overflow-wrap:anywhere}
+#grain-canvas{transition:opacity .25s ease}
+.portal-travelling #grain-canvas,.document-travelling #grain-canvas{opacity:.18}
+@media(max-width:699px){
+  #view .memory-photo{padding:7px}
+  #view .memory-photo .photo-date{top:auto;right:10px;bottom:10px;font-size:11px}
+  #view .dispatch-photo{margin-bottom:23px}
+  #view .dispatch-photo img{aspect-ratio:1.65}
+  .press-ending{padding-top:23px;margin-top:24px}
+  .press-ending>h2{font-size:31px;line-height:1.4}
+  .press-ending>p{font-size:12px}
+  #notice{left:22px;right:22px;padding:16px 20px 17px}
+}
+@media(prefers-reduced-motion:reduce){
+  #notice,#grain-canvas{transition:none}
+}
