@@ -23,9 +23,9 @@
 .tv-finale .crt-entry-copy>small{font-size:8px;letter-spacing:.05em}
 .tv-finale .crt-entry-state{font-size:9px}
 .tv-finale .crt-entry-list{gap:5px}
-.finale-footer{display:flex;flex:none;flex-direction:column;align-items:center;gap:11px;font-size:8px;line-height:1.7;letter-spacing:.04em;color:#7f996c;text-align:center}
-.finale-tools{display:flex;align-items:center;justify-content:center;gap:26px}
-.finale-tools>button{min-height:30px;padding:3px 0;border:0;border-bottom:1px solid #8fa87950;background:none;color:#a4bc8d;font-size:9px;line-height:1.5;letter-spacing:.08em}
+.finale-footer{display:flex;flex:none;flex-direction:column;align-items:center;gap:21px;padding-bottom:10px;font-size:8px;line-height:1.7;letter-spacing:.04em;color:#7f996c;text-align:center}
+.finale-tools{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:-8px}
+.finale-tools>button{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:3px 0;border:0;border-bottom:1px solid #8fa87950;background:none;color:#a4bc8d;font:inherit;font-size:9px;font-weight:400;line-height:1.5;letter-spacing:.08em;white-space:nowrap}
 .finale-tools>button:focus-visible{outline:1px solid #c6dca2;outline-offset:4px}
 .finale-tools>button:hover{color:#d6ebba}
 .finale-tools>button:disabled{opacity:1;cursor:default}
@@ -47,7 +47,7 @@
   .tv-finale .crt-entry-copy>b{font-size:14px}
   .tv-finale .crt-entry-copy>small{font-size:7px}
   .tv-finale .crt-entry-number,.tv-finale .crt-entry-state{font-size:8px}
-  .finale-footer{font-size:6px;gap:9px}
+  .finale-footer{font-size:6px;gap:18px}
   .finale-tools>button{font-size:8px}
 }
 @media(max-height:660px){
@@ -61,7 +61,7 @@
   .finale-endmark{margin-top:10px;font-size:17px}
   .tv-finale .crt-entry{min-height:48px}
   .tv-finale .finale-menu{margin-bottom:9px}
-  .finale-footer{gap:6px}
+  .finale-footer{gap:15px;padding-bottom:6px}
 }
 @media(prefers-reduced-motion:reduce){
   .tv-finale .finale-credit-window{height:auto;mask-image:none}

@@ -22,6 +22,7 @@ import { TvAudio } from './tv-audio';
 import { DeviceTilt, type TiltPosition, type TiltState } from './device-tilt';
 import { sceneLayout, sceneBackgroundStyle, sceneCoverage, clueScenePosition } from './scene-layout';
 import { portalFlightFrame } from './portal-flight';
+import { sceneParallaxScale } from './scene-parallax';
 import { clues, rooms, type Clue, type ClueId, type Room, type RoomId } from './content';
 
 gsap.registerPlugin(CustomEase);
@@ -181,8 +182,7 @@ function applyFlightMotion() {
   motion.scenePose = pose;
   if (screen.kind === 'room') {
     gsap.set(worldCamera, pose);
-    const hotspots = view.querySelector('.hotspot-field');
-    if (hotspots) gsap.set(hotspots, { x: pose.x, y: pose.y });
+    syncHotspotPosition();
   }
   gsap.set(facadeCamera, {
     x: motion.baseFacade.x + shiftX / motion.zoom,
@@ -411,8 +411,14 @@ function roomCameraPose({ dx, dy } = mousePosition) {
   };
 }
 function syncHotspotPosition() {
+  const pose = lensPose(worldCamera);
+  const zoom = Number(gsap.getProperty(worldCamera, 'scaleX'));
+  const room = roomById(worldRoom ?? screenRoom(screen));
+  const painted = sceneCoverage(sceneLayout(room, innerWidth, innerHeight));
+  const safety = sceneParallaxScale(innerWidth, innerHeight, painted, pose, zoom);
+  gsap.set(worldCamera.querySelector('.world-image'), { scale: safety });
   const field = view.querySelector('.hotspot-field');
-  if (field) gsap.set(field, { x: Number(gsap.getProperty(worldCamera, 'x')), y: Number(gsap.getProperty(worldCamera, 'y')) });
+  if (field) gsap.set(field, { x: pose.x, y: pose.y, scale: safety * zoom, transformOrigin: '50% 50%' });
 }
 function layoutHotspots() {
   view.querySelectorAll<HTMLElement>('.clue-marker').forEach(marker => {
@@ -530,7 +536,14 @@ function syncPortalSceneImages() {
       const layout = sceneLayout(room, innerWidth, innerHeight);
       surface.image.style.cssText = `${sceneBackground(room)};width:${layout.planeWidth}px;height:${layout.planeHeight}px;left:${-layout.planeWidth / 2}px;top:${-layout.planeHeight / 2}px`;
     }
-    surface.image.style.transform = `translate3d(${centerX}px,${centerY}px,0) rotateY(${(motion?.scenePose.rotationY ?? 0) * p}deg) rotateX(${(motion?.scenePose.rotationX ?? 0) * p}deg) scale(${motion?.sceneScale ?? previewSceneScale()})`;
+    const rotationY = (motion?.scenePose.rotationY ?? 0) * p;
+    const rotationX = (motion?.scenePose.rotationX ?? 0) * p;
+    const sceneScale = motion?.sceneScale ?? previewSceneScale();
+    const room = roomById(surface.viewport.dataset.room!);
+    const clip = { left: Math.max(0, rect.left), right: Math.min(innerWidth, rect.left + rect.width), top: Math.max(0, rect.top), bottom: Math.min(innerHeight, rect.top + rect.height) };
+    const safety = clip.left < clip.right && clip.top < clip.bottom
+      ? sceneParallaxScale(innerWidth, innerHeight, sceneCoverage(sceneLayout(room, innerWidth, innerHeight)), { x: centerX - innerWidth / 2, y: centerY - innerHeight / 2, rotationX, rotationY }, sceneScale, clip) : 1;
+    surface.image.style.transform = `translate3d(${centerX}px,${centerY}px,0) rotateY(${rotationY}deg) rotateX(${rotationX}deg) scale(${sceneScale * safety})`;
   });
 }
 
@@ -633,6 +646,7 @@ function updateSoundButton() {
     finaleSound.textContent = `声音 ${soundEnabled ? '开' : '关'}`;
     finaleSound.setAttribute('aria-pressed', String(soundEnabled));
     finaleSound.setAttribute('aria-label', soundEnabled ? '关闭声音' : '开启声音');
+    return;
   }
   const sound = view.querySelector<HTMLButtonElement>('[data-action="sound"]');
   if (!sound) return;
