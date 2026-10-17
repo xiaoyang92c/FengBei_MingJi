@@ -92,9 +92,11 @@ function setup({ permission, mobile = true, secure = true, reduced = false, supp
   assert.ok(s.positions.at(-1).dx > .58);
   const calls = s.positions.length;
   s.sample(60, 18); s.flush(); assert.equal(s.positions.length, calls, 'still phone does not repeat camera updates');
-  s.tilt.calibrate();
-  assert.equal(s.positions.at(-1).dx, 0, 'room arrival can reset the resting view');
-  s.sample(60, 18); s.flush(); assert.equal(s.positions.at(-1).dx, 0);
+  s.tilt.setSceneActive(true); s.sample(60, 18); s.flush();
+  assert.equal(s.positions.length, calls, 'window and document routes keep the active grip without recentering');
+  s.tilt.setSceneActive(false);
+  s.tilt.setSceneActive(true); s.sample(60, 18); s.flush();
+  assert.ok(s.positions.at(-1).dx > .58, 'suspending and resuming does not reset the offset');
   s.window.screen.orientation.angle = 90;
   s.window.screen.orientation.emit('change');
   s.sample(60, 18); s.flush();
@@ -103,6 +105,9 @@ function setup({ permission, mobile = true, secure = true, reduced = false, supp
   assert.equal(s.window.count('deviceorientation'), 0); assert.equal(s.frames.size, 0);
   s.document.hidden = false; s.document.emit('visibilitychange');
   assert.equal(s.window.count('deviceorientation'), 1);
+  s.sample(60, 26); s.flush();
+  const resumed = s.positions.at(-1).dy;
+  assert.ok(resumed < -.3, 'the original screen-rotation baseline survives background suspension');
   s.tilt.setSceneActive(false); assert.equal(s.window.count('deviceorientation'), 0);
   s.tilt.setSceneActive(true); s.sample(60, 0); s.flush();
   await s.tilt.toggle(); assert.equal(s.tilt.state, 'off'); assert.equal(s.window.count('deviceorientation'), 0);

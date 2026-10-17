@@ -70,14 +70,6 @@ export class DeviceTilt {
   get visible() { return this.mobile.matches && this.sceneActive; }
   get usingSensor() { return this.listening && this.state === 'active'; }
 
-  /** A new room starts from the current grip, without carrying an old offset. */
-  calibrate() {
-    this.recenter();
-    this.filtered = { dx: 0, dy: 0 };
-    this.emitted = null;
-    this.onMove({ dx: 0, dy: 0 });
-  }
-
   setSceneActive(active: boolean) {
     if (active === this.sceneActive) return;
     this.sceneActive = active;
@@ -125,7 +117,6 @@ export class DeviceTilt {
       && this.enabled && this.sceneActive && !document.hidden && !this.pageHidden;
     if (shouldListen && !this.listening) {
       this.listening = true;
-      this.projector.reset();
       this.state = 'starting';
       window.addEventListener('deviceorientation', this.onOrientation, { passive: true });
       this.timer = window.setTimeout(() => {
@@ -181,9 +172,14 @@ export class DeviceTilt {
     this.listening = false;
     this.frame = 0;
     this.lastFrame = 0;
-    this.target = { dx: 0, dy: 0 };
-    this.filtered = { dx: 0, dy: 0 };
-    this.emitted = null;
+    // Routes and background suspension preserve the user's grip and offset.
+    // Only an explicit switch-off starts a fresh calibration next time.
+    if (!this.enabled) {
+      this.projector.reset();
+      this.target = { dx: 0, dy: 0 };
+      this.filtered = { dx: 0, dy: 0 };
+      this.emitted = null;
+    }
   }
 
   dispose() {

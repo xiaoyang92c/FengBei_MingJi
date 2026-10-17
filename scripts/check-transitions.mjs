@@ -39,6 +39,20 @@ for (const room of rooms) for (const sign of [-1,1]) for (const [width, height] 
   near(start.sceneScale,.5); near(end.sceneScale,1);
   near(end.imageX,width/2+pose.x); near(end.imageY,height/2+pose.y);
   assert.ok(end.coverage >= 1.59, 'handoff covers every viewport edge');
+  // A phone may keep rotating while the door expands or returns. The image
+  // and aperture must still agree without measuring the DOM on every tick.
+  for(let step=0;step<=100;step++) {
+    const p=step/100, dx=Math.sin(p*Math.PI*2)*.6, dy=Math.cos(p*Math.PI*2)*.6;
+    const x=-dx*Math.min(50,width*.1), y=-dy*34;
+    const moving={...aperture,left:aperture.left+x,top:aperture.top+y};
+    const frame=portalFlightFrame(moving,width,height,p,.5,{x,y},painted);
+    near(width/2+frame.facadeX+(moving.left-width/2)*frame.scale,frame.left);
+    near(height/2+frame.facadeY+(moving.top-height/2)*frame.scale,frame.top);
+    assert.ok(frame.imageX-painted.left*frame.sceneScale<=Math.max(0,frame.left)+.001);
+    assert.ok(frame.imageX+painted.right*frame.sceneScale>=Math.min(width,frame.left+moving.width*frame.scale)-.001);
+    assert.ok(frame.imageY-painted.top*frame.sceneScale<=Math.max(0,frame.top)+.001);
+    assert.ok(frame.imageY+painted.bottom*frame.sceneScale>=Math.min(height,frame.top+moving.height*frame.scale)-.001);
+  }
 }
 
 // Exercise the real fold controller without a browser or a GPU-specific mock.
@@ -70,8 +84,9 @@ class Element {
   }
 }
 const frames=new Map(); let next=0;
+let coarse=true;
 const foldModule=await loadModule('paper-fold',{
-  window:{matchMedia:()=>({matches:true})}, document:{createElement:()=>new Element()},
+  window:{matchMedia:()=>({matches:coarse})}, document:{createElement:()=>new Element()},
   requestAnimationFrame(fn){frames.set(++next,fn);return next;}, cancelAnimationFrame(id){frames.delete(id);},
 });
 for(let angle=0;angle<=180;angle+=.25) {
@@ -97,4 +112,17 @@ flush(); assert.ok(parent.children.includes(packet.fold));
 flush(); assert.ok(!parent.children.includes(packet.fold));
 const cancelled=foldModule.createPaperFold(paper); cancelled.handoff(); cancelled.dispose();
 assert.equal(frames.size,0,'route changes cancel pending handoff frames');
+coarse=false;
+const desktop=foldModule.createPaperFold(paper);
+assert.equal(desktop.fold.classList.contains('is-flat-fold'),false,'desktop retains its 3D fold');
+assert.equal(desktop.bottom.style.transformOrigin,'50% 0%','desktop fold hinges at the sheet midpoint');
+for(const angle of [0,45,90,135,180]) {
+  desktop.motion.angle=angle; desktop.render();
+  assert.equal(desktop.bottom.style.transform,`rotateX(${angle}deg)`);
+  const front=desktop.fold.querySelectorAll('.fold-front')[0];
+  const back=desktop.fold.querySelectorAll('.fold-back')[0];
+  assert.equal(front.style.opacity,angle<89.9?'1':'0');
+  assert.equal(back.style.opacity,angle>90.1?'1':'0','desktop never leaks the reverse cover over the open page');
+}
+desktop.dispose();
 console.log('Transition checks passed: viewport coverage, forward/reverse geometry, exclusive fold faces, scroll snapshots and paint-safe cleanup.');

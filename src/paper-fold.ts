@@ -27,6 +27,7 @@ export function createPaperFold(paper: HTMLElement) {
   top.append(copy());
   const bottom = document.createElement('div');
   bottom.className = 'fold-bottom';
+  bottom.style.transformOrigin = '50% 0%';
   const front = document.createElement('div');
   front.className = 'fold-front';
   front.append(copy());
@@ -69,12 +70,16 @@ export function createPaperFold(paper: HTMLElement) {
   const motion = { angle: 0 };
   const shades = [...fold.querySelectorAll<HTMLElement>('.fold-face-shade')];
   const render = () => {
-    if (!flat) { bottom.style.transform = `rotateX(${motion.angle}deg)`; return; }
     const projection = foldProjection(motion.angle);
     front.style.visibility = projection.front ? 'visible' : 'hidden';
     back.style.visibility = projection.back ? 'visible' : 'hidden';
     front.style.opacity = projection.front ? '1' : '0';
     back.style.opacity = projection.back ? '1' : '0';
+    if (!flat) {
+      bottom.style.transform = `rotateX(${motion.angle}deg)`;
+      shades.forEach(shade => { shade.style.opacity = String(projection.shade); });
+      return;
+    }
     front.style.transform = `scale(${projection.width},${projection.height})`;
     back.style.transform = `translateY(${-height / 2}px) scale(${projection.width},${projection.height})`;
     shades.forEach(shade => { shade.style.opacity = String(projection.shade); });

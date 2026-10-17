@@ -6,6 +6,7 @@ import './memory-ledger.css';
 import './field-notes.css';
 import './tv-cover.css';
 import './tv-finale.css';
+import './document-paper.css';
 import { tvCoverPage, mountTvCover, leaveTvCover } from './tv-cover';
 import { tvFinalePage, mountTvFinale } from './tv-finale';
 import { cluePage, mountReadingMotion, leaveReadingPage } from './reading-ui';
@@ -71,7 +72,6 @@ let busy = false;
 let pan = 0;
 let mousePosition = { dx: 0, dy: 0 };
 let deviceTilt: DeviceTilt | undefined;
-let roomPointerOrigin = { dx: 0, dy: 0 };
 let pointerStart: { x: number; y: number; pan: number } | null = null;
 let selectionDrag: { pointerId: number; x: number; y: number; index: number; active: boolean } | null = null;
 let suppressSelectionClickUntil = 0;
@@ -152,6 +152,7 @@ type FlightMotion = {
 };
 let flightMotion: FlightMotion | null = null;
 let cancelMobileTravel: (() => void) | null = null;
+let mobileFlight: { dx: number; dy: number; update: () => void } | null = null;
 type PortalSurface = Pick<FlightMotion, 'image' | 'opening' | 'viewport' | 'innerShade' | 'shadeBlur'> & { previewImage: HTMLElement; corners: HTMLElement[]; viewportSize?: string; openingWidth?: number };
 const portalSurfaces = new Map<HTMLElement, PortalSurface>();
 function lensPose(element: HTMLElement): LensPose {
@@ -171,12 +172,11 @@ function applyFlightMotion() {
   const shiftY = -dy * 34;
   const turnX = -dy * 5;
   const turnY = dx * 7.5;
-  const weight = motion.entering ? 0 : 1 - motion.progress;
   const pose = {
-    x: motion.baseWorld.x * weight + shiftX,
-    y: motion.baseWorld.y * weight + shiftY,
-    rotationX: motion.baseWorld.rotationX * weight + turnX,
-    rotationY: motion.baseWorld.rotationY * weight + turnY,
+    x: motion.baseWorld.x + shiftX,
+    y: motion.baseWorld.y + shiftY,
+    rotationX: motion.baseWorld.rotationX + turnX,
+    rotationY: motion.baseWorld.rotationY + turnY,
   };
   motion.scenePose = pose;
   if (screen.kind === 'room') {
@@ -203,6 +203,14 @@ function moveFacadeLens(dx: number, dy: number, duration = .7) {
     x: -dx * Math.min(20, innerWidth * .04), y: -dy * 11,
     rotationY: touchDevice.matches ? 0 : dx * 1.8, rotationX: touchDevice.matches ? 0 : -dy * 1.2,
     duration: duration + .1, ease: 'power2.out', overwrite: 'auto',
+  });
+}
+/** This camera is outside the sheet/label entrance and fold transforms. */
+function moveDetailLens(dx: number, dy: number, duration: number) {
+  const camera = view.querySelector<HTMLElement>('.newspaper-pan,.detail-parallax');
+  if (camera) gsap.to(camera, {
+    x: -dx * 12, y: -dy * 9, rotation: touchDevice.matches ? 0 : dx * .22,
+    duration: reduced.matches ? 0 : duration, ease: 'power2.out', overwrite: 'auto',
   });
 }
 const grainCanvas = document.querySelector<HTMLCanvasElement>('#grain-canvas')!;
@@ -394,9 +402,7 @@ function screenRoom(state: Screen): RoomId {
     : state.kind === 'clue' ? clueById(state.clue).roomId
     : rooms[0].id;
 }
-function roomCameraPose() {
-  const dx = mousePosition.dx - roomPointerOrigin.dx;
-  const dy = mousePosition.dy - roomPointerOrigin.dy;
+function roomCameraPose({ dx, dy } = mousePosition) {
   const margin = innerWidth >= 700 && innerWidth > innerHeight ? .035 : .14;
   return {
     x: THREE.MathUtils.clamp(pan * .35 - dx * Math.min(50, innerWidth * .1), -innerWidth * margin, innerWidth * margin),
@@ -433,7 +439,8 @@ function updateWorld(immediate = false) {
   gsap.set(worldStage, { clipPath: 'none' });
   const inScene = screen.kind === 'room' || screen.kind === 'clue';
   const scale = screen.kind === 'clue' ? 1.04 : screen.kind === 'select' || screen.kind === 'room' ? 1 : 1.1;
-  const cameraPose = inScene ? roomCameraPose() : { x: 0, y: 0, rotationX: 0, rotationY: 0 };
+  const cameraPose = screen.kind === 'cover' || screen.kind === 'finale'
+    ? { x: 0, y: 0, rotationX: 0, rotationY: 0 } : roomCameraPose();
   worldStage.classList.toggle('room-world', inScene);
   gsap.to(worldCamera, { scale, ...cameraPose, duration, ease: 'power2.inOut', overwrite: 'auto', onUpdate: syncHotspotPosition });
   gsap.killTweensOf(worldStage);
@@ -815,6 +822,8 @@ function render(finaleBackdrop?: HTMLElement) {
   disposePencilWashes?.();
   disposePencilWashes = null;
   screen = readRoute();
+  awaitingSelectReveal = null;
+  outgoingSelectIndex = null;
   // Every visit to the TV starts with sound; the entry choice applies afterward.
   if (screen.kind === 'cover') soundEnabled = true;
   if (screen.kind === 'finale' && collected.size < 5) {
@@ -840,7 +849,15 @@ function render(finaleBackdrop?: HTMLElement) {
   }
   view.dataset.screen = screen.kind;
   view.dataset.route = location.hash;
-  deviceTilt?.setSceneActive(screen.kind === 'select' || screen.kind === 'room' || screen.kind === 'clue');
+  if (screen.kind === 'clue') {
+    const root = view.firstElementChild!;
+    const camera = document.createElement('div');
+    camera.className = 'detail-parallax';
+    camera.append(...root.childNodes);
+    root.append(camera);
+  }
+  deviceTilt?.setSceneActive(screen.kind !== 'cover' && screen.kind !== 'finale');
+  moveDetailLens(mousePosition.dx, mousePosition.dy, 0);
   if (screen.kind === 'room') { stageRoomUi(); if (!busy) revealRoomUi(); }
   const copyCamera = view.querySelector<HTMLElement>('.select-copy-camera, .room-copy-camera');
   if (copyCamera) gsap.set(copyCamera, {
@@ -858,6 +875,7 @@ function render(finaleBackdrop?: HTMLElement) {
   }
   updateWorld();
   updateFacade();
+  if (!portalTravelInProgress) moveFacadeLens(mousePosition.dx, mousePosition.dy, 0);
   setupClueMotion();
   disposePencilWashes = screen.kind === 'finale' ? null : mountPencilWashes(view);
   const revealEnding = screen.kind === 'notebook' && notebookEndPending;
@@ -887,7 +905,8 @@ async function travelMobileRoom(entering: boolean, room: Room) {
   const layout = sceneLayout(room, width, height);
   const painted = sceneCoverage(layout);
   const preview = previewSceneScale();
-  const pose = entering ? { x: 0, y: 0 } : lensPose(worldCamera);
+  const baseFacade = lensPose(facadeCamera);
+  if (entering) pan = 0;
   const viewportStyle = surface.viewport.style.cssText;
   const imageStyle = surface.image.style.cssText;
   const pages = [...facadeTrack.querySelectorAll<HTMLElement>('.facade-page')];
@@ -900,6 +919,8 @@ async function travelMobileRoom(entering: boolean, room: Room) {
   surface.innerShade.style.visibility = 'hidden';
   let cancelled = false;
   const restore = () => {
+    if (mobileFlight === liveInput) mobileFlight = null;
+    gsap.killTweensOf(liveInput);
     surface.viewport.style.cssText = viewportStyle;
     surface.image.style.cssText = imageStyle;
     surface.viewportSize = undefined;
@@ -911,9 +932,15 @@ async function travelMobileRoom(entering: boolean, room: Room) {
   };
   cancelMobileTravel = () => { cancelled = true; navigation?.kill(); restore(); };
   const motion = { progress: 0 };
+  const liveInput = { ...mousePosition, update: () => {} };
   const update = () => {
     const p = entering ? motion.progress : 1 - motion.progress;
-    const frame = portalFlightFrame(aperture, width, height, p, preview, pose, painted);
+    const x = -liveInput.dx * Math.min(50, width * .1), y = -liveInput.dy * 34;
+    gsap.set(facadeCamera, { x, y });
+    const copy = view.querySelector('.select-copy-camera,.room-copy-camera');
+    if (copy) gsap.set(copy, { x: -liveInput.dx * Math.min(20, width * .04), y: -liveInput.dy * 11 });
+    const movingAperture = { ...aperture, left: aperture.left + x - baseFacade.x, top: aperture.top + y - baseFacade.y };
+    const frame = portalFlightFrame(movingAperture, width, height, p, preview, roomCameraPose(liveInput), painted);
     gsap.set(facadeStage, { scale: frame.scale, x: frame.facadeX, y: frame.facadeY });
     // Once the door surrounds the screen, its wall no longer needs a giant texture.
     facadeStage.style.visibility = frame.coverage > 1.025 ? 'hidden' : 'visible';
@@ -921,6 +948,8 @@ async function travelMobileRoom(entering: boolean, room: Room) {
     surface.viewport.style.transform = frame.viewportTransform;
     surface.image.style.transform = frame.imageTransform;
   };
+  liveInput.update = update;
+  mobileFlight = liveInput;
   update();
   await paintReady();
   if (cancelled) return;
@@ -934,20 +963,16 @@ async function travelMobileRoom(entering: boolean, room: Room) {
     else navigation.add(leaveRoomUi(), 0);
   });
   if (cancelled) return;
-  if (entering) {
-    pan = 0;
-    mousePosition = { dx: 0, dy: 0 };
-    roomPointerOrigin = { dx: 0, dy: 0 };
-    deviceTilt?.calibrate();
-  }
   history.pushState(null, '', entering ? `#room/${room.id}` : `#select/${room.id}`);
   render();
   const controls = entering ? null : view.querySelectorAll('.select-heading,.select-footer,.select-navigation,.scene-controls');
   if (entering) {
     gsap.killTweensOf([worldCamera, worldStage]);
-    gsap.set(worldCamera, { scale: 1, ...roomCameraPose() });
+    gsap.set(worldCamera, { scale: 1, ...roomCameraPose(liveInput) });
     gsap.set(worldStage, { opacity: 1 });
   } else {
+    syncSelectionUi(room);
+    setPortalX(portalX(roomIndex(room.id)));
     gsap.set(facadeStage, { scale: 1, x: 0, y: 0, opacity: 1, visibility: 'visible' });
     if (controls) gsap.set(controls, { autoAlpha: 0, y: -12 });
   }
@@ -959,8 +984,13 @@ async function travelMobileRoom(entering: boolean, room: Room) {
   syncPortalSceneImages();
   if (sceneResizePending) { sceneResizePending = false; refreshSceneLayout(); }
   busy = false;
+  applySceneParallax(mousePosition, true);
   if (entering) revealRoomUi();
-  else if (controls) gsap.to(controls, { autoAlpha: 1, y: 0, duration: .4, stagger: .025, ease: 'power2.out' });
+  else if (controls) {
+    syncSelectionUi(room);
+    setPortalX(portalX(roomIndex(room.id)));
+    gsap.to(controls, { autoAlpha: 1, y: 0, duration: .4, stagger: .025, ease: 'power2.out', clearProps: 'opacity,visibility' });
+  }
 }
 
 async function travelRoom(entering: boolean) {
@@ -1012,14 +1042,13 @@ async function travelRoom(entering: boolean) {
   const motion: FlightMotion = {
     entering,
     basePointer: { ...mousePosition },
-    baseWorld: entering ? { x: 0, y: 0, rotationX: 0, rotationY: 0 } : lensPose(worldCamera),
+    baseWorld: entering ? roomCameraPose() : lensPose(worldCamera),
     baseFacade: lensPose(facadeCamera), progress: 0, zoom: entering ? 1 : finalScale,
     sceneScale: entering ? previewSceneScale() : 1, scenePose: lensPose(worldCamera),
     ...surface,
     dx: mousePosition.dx, dy: mousePosition.dy,
   };
   flightMotion = motion;
-  if (entering) roomPointerOrigin = { ...mousePosition };
   const updateFlight = () => {
     const p = entering ? motion.progress : 1 - motion.progress;
     // Logarithmic distance keeps the first few pixels gentle rather than
@@ -1340,14 +1369,16 @@ app.addEventListener('pointerdown', (event) => {
 });
 /** Pointer and device tilt share camera transforms, including hotspot tracking. */
 function applySceneParallax({ dx, dy }: TiltPosition, fromTilt = false) {
-  if (reduced.matches || document.hidden || selectionDrag?.active || (busy && !flightMotion)) return;
+  if (reduced.matches || document.hidden) return;
   mousePosition = { dx, dy };
-  if (screen.kind === 'chapter') gsap.to('.newspaper-pan', { x: -dx * 9, y: -dy * 6, rotation: dx * .18, duration: 1.1, ease: 'power2.out', overwrite: 'auto' });
-  if (flightMotion) {
+  moveDetailLens(dx, dy, fromTilt ? .22 : .7);
+  if (mobileFlight) {
+    gsap.to(mobileFlight, { dx, dy, duration: .22, ease: 'power2.out', overwrite: 'auto', onUpdate: mobileFlight.update });
+  } else if (flightMotion) {
     gsap.to(flightMotion, { dx, dy, duration: .18, ease: 'power2.out', overwrite: 'auto', onUpdate: applyFlightMotion });
-  } else if (screen.kind === 'select' || screen.kind === 'room' || screen.kind === 'clue') {
+  } else if (screen.kind !== 'cover' && screen.kind !== 'finale') {
     moveFacadeLens(dx, dy, fromTilt ? .22 : .7);
-    if (screen.kind === 'room' || screen.kind === 'clue') {
+    if (screen.kind !== 'select') {
       gsap.to(worldCamera, { ...roomCameraPose(), duration: fromTilt ? .22 : .7, ease: 'power2.out', overwrite: 'auto', onUpdate: syncHotspotPosition });
     }
   }
@@ -1381,16 +1412,7 @@ app.addEventListener('pointermove', (event) => {
 });
 app.addEventListener('pointerleave', event => {
   if (event.pointerType !== 'mouse' || deviceTilt?.usingSensor) return;
-  mousePosition = { dx: 0, dy: 0 };
-  if (flightMotion) {
-    gsap.to(flightMotion, { dx: 0, dy: 0, duration: .3, ease: 'power2.out', overwrite: 'auto', onUpdate: applyFlightMotion });
-    return;
-  }
-  moveFacadeLens(0, 0);
-  if (screen.kind === 'chapter') gsap.to('.newspaper-pan', { x: 0, y: 0, rotation: 0, duration: 1.1, ease: 'power2.out' });
-  if (screen.kind === 'room' || screen.kind === 'clue') {
-    gsap.to(worldCamera, { ...roomCameraPose(), duration: .8, ease: 'power2.out', overwrite: 'auto', onUpdate: syncHotspotPosition });
-  }
+  applySceneParallax({ dx: 0, dy: 0 });
 });
 window.addEventListener('pointerup', (event) => {
   pointerStart = null;
@@ -1425,9 +1447,8 @@ window.addEventListener('keydown', (event) => {
 
 deviceTilt = new DeviceTilt(position => {
   if (!pointerStart) {
-    if (deviceTilt?.state === 'off') roomPointerOrigin = { dx: 0, dy: 0 };
     applySceneParallax(position, true);
   }
 }, updateTiltButton);
-deviceTilt.setSceneActive(screen.kind === 'select' || screen.kind === 'room' || screen.kind === 'clue');
+deviceTilt.setSceneActive(screen.kind !== 'cover' && screen.kind !== 'finale');
 if (import.meta.hot) import.meta.hot.dispose(() => deviceTilt?.dispose());

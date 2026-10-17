@@ -1,0 +1,22 @@
+/* Fine paper grain without the source photograph's enlarged fold stains. */
+:root {
+  --document-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='grain' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%236c5533' opacity='.12' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+}
+.paper-screen .unfolding-paper,
+.paper-screen .fold-back,
+.memory-ledger .ledger-tabs,
+.dispatch-screen .dispatch-paper,
+.dispatch-screen .dispatch-scene-label {
+  background-color: var(--press-paper);
+  background-image: var(--document-grain);
+  background-size: 180px 180px;
+  background-repeat: repeat;
+}
+.detail-parallax {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 30%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-parallax { transform: none !important; }
+}
