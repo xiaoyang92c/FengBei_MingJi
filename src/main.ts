@@ -23,6 +23,7 @@ import { DeviceTilt, type TiltPosition, type TiltState } from './device-tilt';
 import { sceneLayout, sceneBackgroundStyle, sceneCoverage, clueScenePosition } from './scene-layout';
 import { portalFlightFrame } from './portal-flight';
 import { sceneParallaxScale } from './scene-parallax';
+import { mountPaperElastic } from './paper-elastic';
 import { clues, rooms, type Clue, type ClueId, type Room, type RoomId } from './content';
 
 gsap.registerPlugin(CustomEase);
@@ -84,6 +85,7 @@ let disposeFinaleMotion: (() => void) | null = null;
 let notebookEndPending = false;
 let notebookScroll: gsap.core.Tween | null = null;
 let disposePaperMotion: (() => void) | null = null;
+let paperElastic: ReturnType<typeof mountPaperElastic> | null = null;
 let disposePencilWashes: (() => void) | null = null;
 
 app.innerHTML = `
@@ -819,6 +821,8 @@ function leaveRoomUi(): gsap.core.Timeline {
   return timeline;
 }
 function render(finaleBackdrop?: HTMLElement) {
+  paperElastic?.dispose();
+  paperElastic = null;
   roomUiMotion?.kill();
   roomUiMotion = null;
   disposeCoverMotion?.();
@@ -895,6 +899,7 @@ function render(finaleBackdrop?: HTMLElement) {
   const revealEnding = screen.kind === 'notebook' && notebookEndPending;
   if (revealEnding) notebookEndPending = false;
   disposePaperMotion = screen.kind === 'finale' ? null : mountPaperMotion(view, reduced.matches, revealEnding ? () => { void scrollNotebookToEnding(); } : undefined);
+  paperElastic = screen.kind === 'finale' ? null : mountPaperElastic(view, reduced.matches);
   mountFinaleMotion();
   if (screen.kind === 'cover') disposeCoverMotion = mountTvCover(view, reduced.matches, coverLoaders(), {
     ready: () => tvAudio.ready(),
@@ -1206,6 +1211,7 @@ async function go(hash: string, transition = false) {
   if (nextRoom && rooms.some((room) => room.id === nextRoom)) preloadFacade(roomById(nextRoom));
   const setRoute = (backdrop?: HTMLElement) => { if (location.hash !== hash) history.pushState(null, '', hash); render(backdrop); };
   if (screen.kind === 'notebook' && kind === 'finale') {
+    paperElastic?.reset();
     const snapshot = view.firstElementChild!.cloneNode(true) as HTMLElement;
     snapshot.classList.add('finale-paper-underlay');
     snapshot.inert = true;
@@ -1221,6 +1227,7 @@ async function go(hash: string, transition = false) {
   }
 
   const closingDocument = screen.kind === 'notebook' || screen.kind === 'chapter' || screen.kind === 'clue';
+  if (closingDocument) paperElastic?.reset();
   if (closingDocument) uiAudio.play(audioContext, 'paper', { volume: .48 });
   if (!transition || reduced.matches) { if ((screen.kind === 'cover' && kind === 'select') || screen.kind === 'finale') { tvAudio.prepareExit(); if (screen.kind !== 'finale' || kind !== 'cover') tvAudio.powerOff(); } setRoute(); busy = false; return; }
   navigation?.kill();
@@ -1465,4 +1472,4 @@ deviceTilt = new DeviceTilt(position => {
   }
 }, updateTiltButton);
 deviceTilt.setSceneActive(screen.kind !== 'cover' && screen.kind !== 'finale');
-if (import.meta.hot) import.meta.hot.dispose(() => deviceTilt?.dispose());
+if (import.meta.hot) import.meta.hot.dispose(() => { deviceTilt?.dispose(); paperElastic?.dispose(); });

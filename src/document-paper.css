@@ -5,6 +5,7 @@
 .paper-screen .unfolding-paper,
 .paper-screen .fold-back,
 .memory-ledger .ledger-tabs,
+.field-notes .survey-top,
 .dispatch-screen .dispatch-paper,
 .dispatch-screen .dispatch-topline,
 .dispatch-screen .dispatch-scene-label {
@@ -17,6 +18,16 @@
   position: absolute;
   inset: 0;
   transform-origin: 50% 30%;
+}
+@media (pointer: coarse) {
+  html, body { overscroll-behavior: none; }
+  .paper-screen .unfolding-paper, .dispatch-screen .dispatch-paper {
+    overscroll-behavior-y: none;
+    overflow-anchor: none;
+  }
+  .is-edge-pulling > :is(.press-masthead,.press-body,.survey-body,.dispatch-body) {
+    will-change: transform;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .detail-parallax { transform: none !important; }
