@@ -183,6 +183,19 @@
 .fold-back>p{font-size:12px;letter-spacing:.09em;color:var(--press-ink);margin:15px 0 0}
 .paper-screen .paper-fold-stage .fold-copy{inset:0!important;width:100%;height:var(--paper-full-height);margin:0;overflow:hidden;transform:none!important;visibility:visible!important;pointer-events:none}
 .paper-screen .fold-bottom .fold-copy{top:calc(-1 * var(--paper-half-height))!important;bottom:auto!important}
+.paper-screen .paper-is-folding{opacity:0!important;pointer-events:none!important}
+.paper-fold-stage .fold-face-shade{position:absolute;inset:0;display:block;height:auto!important;border:0;background:linear-gradient(180deg,#382b1e55,transparent 85%);pointer-events:none;opacity:0}
+.paper-fold-stage.is-flat-fold{perspective:none;transform-style:flat}
+.is-flat-fold .fold-top{z-index:0;contain:paint;backface-visibility:visible}
+.is-flat-fold .fold-bottom{z-index:1;transform:none;transform-style:flat}
+.is-flat-fold .fold-front,.is-flat-fold .fold-back{contain:paint;backface-visibility:visible;-webkit-backface-visibility:visible;transform-style:flat;will-change:transform,opacity}
+.is-flat-fold .fold-front{transform-origin:50% 0%}
+.is-flat-fold .fold-back{transform-origin:50% 100%}
+.is-flat-fold .fold-copy,.is-flat-fold .fold-copy *{animation:none!important;transition:none!important;will-change:auto!important;-webkit-backface-visibility:visible!important;backface-visibility:visible!important}
+@media(pointer:coarse){
+ .paper-screen,.paper-screen .newspaper-pan{perspective:none!important;transform-style:flat}
+ .paper-screen .unfolding-paper{backface-visibility:visible;-webkit-backface-visibility:visible}
+}
 @media(max-width:699px){
  .room-screen .room-hud-side{width:153px}.room-screen .hud-compact .hud-count{gap:4px;font-size:11px;padding-left:8px}
  .screen:is(.select-screen,.room-screen) .passage-pass.ticket-button.sketch-control{width:190px;height:46px;min-height:46px;grid-template-columns:44px 1fr 35px;padding-right:6px}

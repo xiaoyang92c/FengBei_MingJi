@@ -146,12 +146,13 @@ export function chapterSheet(room: Room, collected: Set<ClueId>) {
 /** Close the visible spread before the folded packet retreats above the viewport. */
 export function foldPaperAway(root: HTMLElement): gsap.core.Timeline {
   const paper = root.querySelector<HTMLElement>('.unfolding-paper')!;
-  const { fold, bottom, height } = createPaperFold(paper);
+  const packet = createPaperFold(paper);
+  const { fold, height } = packet;
   // The snapshot now owns the fold; hide the live surface including its descendants.
-  gsap.set(paper, { autoAlpha: 0 });
-  gsap.set(bottom, { rotationX: 0, transformOrigin: '50% 0%', force3D: true });
-  return gsap.timeline({ onComplete: () => { fold.remove(); } })
-    .to(bottom, { rotationX: 180, duration: .72, ease: 'power2.inOut' })
+  return gsap.timeline({ onComplete: packet.dispose, onInterrupt: packet.dispose })
+    .to({}, { duration: .05 })
+    .call(() => paper.classList.add('paper-is-folding'))
+    .to(packet.motion, { angle: 180, duration: .72, ease: 'power2.inOut', onUpdate: packet.render })
     .to(fold, { y: -paper.offsetTop - height / 2 - 50, duration: .52, ease: 'power2.in' });
 }
 
@@ -162,23 +163,25 @@ export function mountPaperMotion(root: HTMLElement, reduced: boolean, onReady?: 
   if (paper.classList.contains('memory-ledger')) return mountMemoryLedger(paper, reduced, onReady);
   const disposeFieldNotes = paper.classList.contains('field-notes') ? mountFieldNotes(paper) : () => {};
   if (reduced) { onReady?.(); return disposeFieldNotes; }
-  const { fold, bottom, height } = createPaperFold(paper);
+  const packet = createPaperFold(paper);
+  const { fold, height } = packet;
   let activateReading = () => {};
   let opened = false;
+  let opening: gsap.core.Timeline | null = null;
   const finishFold = () => {
     if (opened) return;
     opened = true;
     activateReading();
-    gsap.set(paper, { visibility: 'visible' });
-    fold.remove();
+    packet.handoff();
     onReady?.();
   };
   const context = gsap.context(() => {
-    gsap.set(paper, { visibility: 'hidden' });
-    gsap.set(bottom, { rotationX: 180, transformOrigin: '50% 0%', force3D: true });
-    gsap.timeline({ onComplete: finishFold })
+    paper.classList.add('paper-is-folding');
+    packet.motion.angle = 180;
+    packet.render();
+    opening = gsap.timeline({ onComplete: finishFold })
       .fromTo(fold, { y: -paper.offsetTop - height / 2 - 40 }, { y: 0, duration: .6, ease: 'power3.out' })
-      .to(bottom, { rotationX: 0, duration: .9, ease: 'power2.inOut' }, .52);
+      .to(packet.motion, { angle: 0, duration: .9, ease: 'power2.inOut', onUpdate: packet.render }, .52);
   }, root);
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -220,7 +223,8 @@ export function mountPaperMotion(root: HTMLElement, reduced: boolean, onReady?: 
       } else observer.observe(el);
     });
   };
-  window.addEventListener('resize', finishFold, { once: true });
-  return () => { disposeFieldNotes(); observer.disconnect(); visualObserver.disconnect(); textTweens.forEach(tween => tween.kill()); context.revert(); fold.remove(); window.removeEventListener('resize', finishFold); };
+  const finishOnResize = () => { opening?.progress(1); finishFold(); };
+  window.addEventListener('resize', finishOnResize, { once: true });
+  return () => { disposeFieldNotes(); observer.disconnect(); visualObserver.disconnect(); textTweens.forEach(tween => tween.kill()); context.revert(); packet.dispose(); window.removeEventListener('resize', finishOnResize); };
 }
 

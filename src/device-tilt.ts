@@ -7,8 +7,8 @@ type OrientationConstructor = typeof DeviceOrientationEvent & {
 };
 
 const radians = Math.PI / 180;
-const limit = (value: number) => Math.max(-.4, Math.min(.4, value));
-const response = (degrees: number) => limit(Math.sign(degrees) * Math.max(0, Math.abs(degrees) - .35) / 18 * .4);
+const limit = (value: number) => Math.max(-.6, Math.min(.6, value));
+const response = (degrees: number) => limit(Math.sign(degrees) * Math.max(0, Math.abs(degrees) - .35) / 14 * .6);
 
 /** Relative device rotation avoids Euler jumps when a phone is held upright. */
 export class TiltProjector {
@@ -42,7 +42,7 @@ export class DeviceTilt {
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   private sensor = window.DeviceOrientationEvent as OrientationConstructor | undefined;
   private projector = new TiltProjector();
-  private enabled = !this.sensor?.requestPermission;
+  private enabled = false;
   private permissionGranted = !this.sensor?.requestPermission;
   private sceneActive = false;
   private listening = false;
@@ -69,6 +69,14 @@ export class DeviceTilt {
 
   get visible() { return this.mobile.matches && this.sceneActive; }
   get usingSensor() { return this.listening && this.state === 'active'; }
+
+  /** A new room starts from the current grip, without carrying an old offset. */
+  calibrate() {
+    this.recenter();
+    this.filtered = { dx: 0, dy: 0 };
+    this.emitted = null;
+    this.onMove({ dx: 0, dy: 0 });
+  }
 
   setSceneActive(active: boolean) {
     if (active === this.sceneActive) return;

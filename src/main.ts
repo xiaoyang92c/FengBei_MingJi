@@ -19,7 +19,8 @@ import { BackgroundMusic } from './background-music';
 import { UiAudio } from './ui-audio';
 import { TvAudio } from './tv-audio';
 import { DeviceTilt, type TiltPosition, type TiltState } from './device-tilt';
-import { sceneLayout, sceneBackgroundStyle, clueScenePosition } from './scene-layout';
+import { sceneLayout, sceneBackgroundStyle, sceneCoverage, clueScenePosition } from './scene-layout';
+import { portalFlightFrame } from './portal-flight';
 import { clues, rooms, type Clue, type ClueId, type Room, type RoomId } from './content';
 
 gsap.registerPlugin(CustomEase);
@@ -106,8 +107,9 @@ function updateTiltButton() {
     denied: '体感未授权', 'no-data': '重试体感', insecure: '体感需 HTTPS', unavailable: '体感不支持', reduced: '体感已关闭',
   };
   tiltButton.hidden = !deviceTilt.visible || deviceTilt.state === 'unavailable';
-  tiltButton.querySelector('b')!.textContent = deviceTilt.state === 'active' ? '开' : deviceTilt.state === 'permission' ? '开启' : deviceTilt.state === 'starting' ? '连接中' : deviceTilt.state === 'denied' || deviceTilt.state === 'no-data' ? '重试' : '关';
-  tiltButton.disabled = ['insecure', 'unavailable', 'reduced'].includes(deviceTilt.state);
+  tiltButton.querySelector('b')!.textContent = deviceTilt.usingSensor ? '开' : '关';
+  tiltButton.disabled = ['insecure', 'unavailable', 'reduced', 'starting'].includes(deviceTilt.state);
+  tiltButton.setAttribute('aria-busy', String(deviceTilt.state === 'starting'));
   tiltButton.setAttribute('aria-pressed', String(deviceTilt.state === 'active'));
   tiltButton.setAttribute('aria-label', deviceTilt.state === 'active' ? '关闭倾斜视差' : labels[deviceTilt.state]);
   tiltButton.title = deviceTilt.state === 'insecure' ? '请通过 HTTPS 打开页面以使用体感'
@@ -149,7 +151,8 @@ type FlightMotion = {
   dy: number;
 };
 let flightMotion: FlightMotion | null = null;
-type PortalSurface = Pick<FlightMotion, 'image' | 'opening' | 'viewport' | 'innerShade' | 'shadeBlur'> & { corners: HTMLElement[]; viewportSize?: string; openingWidth?: number };
+let cancelMobileTravel: (() => void) | null = null;
+type PortalSurface = Pick<FlightMotion, 'image' | 'opening' | 'viewport' | 'innerShade' | 'shadeBlur'> & { previewImage: HTMLElement; corners: HTMLElement[]; viewportSize?: string; openingWidth?: number };
 const portalSurfaces = new Map<HTMLElement, PortalSurface>();
 function lensPose(element: HTMLElement): LensPose {
   return {
@@ -193,12 +196,12 @@ function moveFacadeLens(dx: number, dy: number, duration = .7) {
   const copyCamera = view.querySelector<HTMLElement>('.select-copy-camera, .room-copy-camera');
   gsap.to(facadeCamera, {
     x: -dx * Math.min(50, innerWidth * .1), y: -dy * 34,
-    rotationY: dx * 7.5, rotationX: -dy * 5,
+    rotationY: touchDevice.matches ? 0 : dx * 7.5, rotationX: touchDevice.matches ? 0 : -dy * 5,
     duration, ease: 'power2.out', overwrite: 'auto', onUpdate: syncPortalSceneImages,
   });
   if (copyCamera) gsap.to(copyCamera, {
     x: -dx * Math.min(20, innerWidth * .04), y: -dy * 11,
-    rotationY: dx * 1.8, rotationX: -dy * 1.2,
+    rotationY: touchDevice.matches ? 0 : dx * 1.8, rotationX: touchDevice.matches ? 0 : -dy * 1.2,
     duration: duration + .1, ease: 'power2.out', overwrite: 'auto',
   });
 }
@@ -215,11 +218,13 @@ function stopTravelBurst() {
 function travelBurst(reverse = false, duration = 1050) {
   if (reduced.matches || !travelContext) return;
   cancelAnimationFrame(travelFrame);
-  travelCanvas.width = Math.max(1, Math.round(innerWidth * Math.min(devicePixelRatio, 1.5)));
-  travelCanvas.height = Math.max(1, Math.round(innerHeight * Math.min(devicePixelRatio, 1.5)));
+  const pixelRatio = Math.min(devicePixelRatio, touchDevice.matches ? 1 : 1.5);
+  travelCanvas.width = Math.max(1, Math.round(innerWidth * pixelRatio));
+  travelCanvas.height = Math.max(1, Math.round(innerHeight * pixelRatio));
   const started = performance.now();
-  const particles = Array.from({ length: innerWidth < 600 ? 19 : 30 }, (_, index) => ({
-    angle: index / (innerWidth < 600 ? 19 : 30) * Math.PI * 2 + (Math.random() - .5) * .28,
+  const count = touchDevice.matches ? 12 : innerWidth < 600 ? 19 : 30;
+  const particles = Array.from({ length: count }, (_, index) => ({
+    angle: index / count * Math.PI * 2 + (Math.random() - .5) * .28,
     radius: .27 + Math.random() * .42,
     reach: .1 + Math.random() * .2,
     width: .65 + Math.random() * .95,
@@ -249,7 +254,7 @@ function travelBurst(reverse = false, duration = 1050) {
       travelContext.moveTo(x1, y1);
       travelContext.lineTo(x2, y2);
       travelContext.strokeStyle = glow;
-      travelContext.lineWidth = particle.width * Math.min(devicePixelRatio, 1.5);
+      travelContext.lineWidth = particle.width * pixelRatio;
       travelContext.stroke();
     }
     travelFrame = requestAnimationFrame(draw);
@@ -392,7 +397,12 @@ function screenRoom(state: Screen): RoomId {
 function roomCameraPose() {
   const dx = mousePosition.dx - roomPointerOrigin.dx;
   const dy = mousePosition.dy - roomPointerOrigin.dy;
-  return { x: pan * .35 - dx * Math.min(50, innerWidth * .1), y: -dy * 34, rotationY: dx * 7.5, rotationX: -dy * 5 };
+  const margin = innerWidth >= 700 && innerWidth > innerHeight ? .035 : .14;
+  return {
+    x: THREE.MathUtils.clamp(pan * .35 - dx * Math.min(50, innerWidth * .1), -innerWidth * margin, innerWidth * margin),
+    y: THREE.MathUtils.clamp(-dy * 34, -innerHeight * margin, innerHeight * margin),
+    rotationY: touchDevice.matches ? 0 : dx * 7.5, rotationX: touchDevice.matches ? 0 : -dy * 5,
+  };
 }
 function syncHotspotPosition() {
   const field = view.querySelector('.hotspot-field');
@@ -406,13 +416,16 @@ function layoutHotspots() {
     marker.style.top = `${position.y}px`;
   });
 }
+function prepareWorldImage(room: Room) {
+  const image = worldCamera.querySelector<HTMLElement>('.world-image')!;
+  const layout = sceneLayout(room, innerWidth, innerHeight);
+  image.style.cssText = `${sceneBackground(room)};inset:auto;left:${layout.worldLeft}px;top:${layout.worldTop}px;width:${layout.planeWidth}px;height:${layout.planeHeight}px`;
+}
 function updateWorld(immediate = false) {
   const id = screen.kind === 'notebook' ? worldRoom ?? rooms[0].id : screenRoom(screen);
   const duration = reduced.matches || immediate || !worldReady || portalTravelInProgress ? 0 : .65;
   const room = roomById(id);
-  const image = worldCamera.querySelector<HTMLElement>('.world-image')!;
-  const layout = sceneLayout(room, innerWidth, innerHeight);
-  image.style.cssText = `${sceneBackground(room)};inset:auto;left:${layout.worldLeft}px;top:${layout.worldTop}px;width:${layout.planeWidth}px;height:${layout.planeHeight}px`;
+  prepareWorldImage(room);
   worldRoom = id;
   const pose = `${screen.kind}/${screen.kind === 'clue' ? screen.clue : id}`;
   if (pose === lastWorldPose) return;
@@ -435,31 +448,22 @@ function hidePortalSurface(surface: PortalSurface) {
   surface.innerShade.removeAttribute('d');
 }
 function syncPortalSceneImages() {
+  if (cancelMobileTravel) return;
   // Mobile previews travel inside their small native clipping rectangle. Only
   // doorway flights need screen-sized projected polygons and geometry reads.
   if (touchDevice.matches && screen.kind === 'select' && !flightMotion && !portalTravelInProgress) {
     const size = `${innerWidth}/${innerHeight}`;
     portalSurfaces.forEach(surface => {
       hidePortalSurface(surface);
-      if (surface.image.parentElement !== surface.opening) {
-        surface.opening.append(surface.image);
-        surface.viewportSize = undefined;
-      }
       if (surface.viewportSize === size) return;
       const room = roomById(surface.viewport.dataset.room!);
       const layout = sceneLayout(room, innerWidth, innerHeight);
       const scale = previewSceneScale() / Number(gsap.getProperty(facadeCamera, 'scaleX'));
-      surface.image.style.cssText = `${sceneBackground(room)};inset:auto;width:${layout.planeWidth}px;height:${layout.planeHeight}px;left:50%;top:50%;transform:translate(-50%,-50%) scale(${scale})`;
+      surface.previewImage.style.cssText = `${sceneBackground(room)};inset:auto;width:${layout.planeWidth}px;height:${layout.planeHeight}px;left:50%;top:50%;transform:translate(-50%,-50%) scale(${scale})`;
       surface.viewportSize = size;
     });
     return;
   }
-  portalSurfaces.forEach(surface => {
-    if (surface.image.parentElement !== surface.viewport) {
-      surface.viewport.prepend(surface.image);
-      surface.viewportSize = undefined;
-    }
-  });
   if (!flightMotion && screen.kind !== 'select') {
     portalSurfaces.forEach(hidePortalSurface);
     return;
@@ -525,7 +529,9 @@ function syncPortalSceneImages() {
 
 function installPortalSurfaces() {
   facadeTrack.querySelectorAll<HTMLElement>('.portal-scene').forEach((opening, index) => {
-    const image = opening.querySelector<HTMLElement>('.portal-scene-image')!;
+    const previewImage = opening.querySelector<HTMLElement>('.portal-scene-image')!;
+    const image = previewImage.cloneNode(false) as HTMLElement;
+    previewImage.classList.add('portal-preview-image');
     const corners: HTMLElement[] = [];
     for (const [left, top] of [[0, 0], [100, 0], [100, 100], [0, 100]]) {
       const corner = document.createElement('i');
@@ -543,7 +549,7 @@ function installPortalSurfaces() {
     shade.innerHTML = `<defs><filter id="${filterId}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="0"/></filter></defs><path fill="#28221b" fill-rule="evenodd" filter="url(#${filterId})"/>`;
     viewport.append(image, shade);
     cameraRig.append(viewport);
-    portalSurfaces.set(opening, { image, opening, viewport, corners, innerShade: shade.querySelector('path')!, shadeBlur: shade.querySelector('feGaussianBlur')! });
+    portalSurfaces.set(opening, { image, previewImage, opening, viewport, corners, innerShade: shade.querySelector('path')!, shadeBlur: shade.querySelector('feGaussianBlur')! });
   });
 }
 function updateFacade(immediate = false) {
@@ -567,7 +573,9 @@ function updateFacade(immediate = false) {
   syncPortalSceneImages();
 }
 
-window.addEventListener('resize', () => {
+let sceneResizePending = false;
+function refreshSceneLayout() {
+  if (cancelMobileTravel) { sceneResizePending = true; return; }
   lastWorldPose = '';
   updateWorld(true);
   layoutHotspots();
@@ -580,7 +588,8 @@ window.addEventListener('resize', () => {
     finishSelectReveal(index);
   }
   syncPortalSceneImages();
-}, { passive: true });
+}
+window.addEventListener('resize', refreshSceneLayout, { passive: true });
 
 const bgm = document.querySelector<HTMLAudioElement>('#background-music')!;
 const backgroundMusic = new BackgroundMusic(bgm);
@@ -647,7 +656,7 @@ if (import.meta.hot) import.meta.hot.dispose(() => {
   document.removeEventListener('keydown', unlockAudio, true);
 });
 const roomIndex = (id: RoomId) => rooms.findIndex((room) => room.id === id);
-const soundButton = `<div class="scene-controls"><button id="tilt-toggle" class="tilt-toggle sound-toggle pencil-control" type="button" data-action="tilt" hidden aria-pressed="false" aria-label="开启体感">${capsulePencil}<span class="sound-label">体感</span><b>开启</b></button><button class="sound-toggle pencil-control" data-action="sound" aria-label="切换声音"></button></div>`;
+const soundButton = `<div class="scene-controls"><button id="tilt-toggle" class="tilt-toggle sound-toggle pencil-control" type="button" data-action="tilt" hidden aria-pressed="false" aria-label="开启体感">${capsulePencil}<span class="sound-label">体感</span><b>关</b></button><button class="sound-toggle pencil-control" data-action="sound" aria-label="切换声音"></button></div>`;
 function passageButton(room: Room, leaving = false) {
   const label = leaving ? '切换空间' : '进入空间';
   const arrow = 'M5 19 17 7M5 7H17V19';
@@ -862,6 +871,98 @@ function render(finaleBackdrop?: HTMLElement) {
   }, enterFromTv);
   if (screen.kind === 'room') syncHotspotPosition();
 }
+const paintReady = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+/** Keep both photographs mounted; an overlap handoff avoids mobile texture flashes. */
+async function travelMobileRoom(entering: boolean, room: Room) {
+  navigation?.kill();
+  clearChapterBlur();
+  portalTravelInProgress = true;
+  app.classList.add('portal-travelling');
+  gsap.killTweensOf([facadeStage, facadeCamera, worldCamera, worldStage, view.querySelector('.select-copy-camera')]);
+  gsap.set(facadeStage, { scale: 1, x: 0, y: 0 });
+  const surface = [...portalSurfaces.values()][roomIndex(room.id)];
+  const aperture = cinemaBounds(surface.opening);
+  const width = innerWidth, height = innerHeight;
+  const layout = sceneLayout(room, width, height);
+  const painted = sceneCoverage(layout);
+  const preview = previewSceneScale();
+  const pose = entering ? { x: 0, y: 0 } : lensPose(worldCamera);
+  const viewportStyle = surface.viewport.style.cssText;
+  const imageStyle = surface.image.style.cssText;
+  const pages = [...facadeTrack.querySelectorAll<HTMLElement>('.facade-page')];
+  const pageVisibility = pages.map(page => page.style.visibility);
+  pages.forEach((page, index) => { page.style.visibility = index === roomIndex(room.id) ? 'visible' : 'hidden'; });
+  portalSurfaces.forEach(hidePortalSurface);
+  prepareWorldImage(room);
+  surface.viewport.style.cssText = `inset:auto;left:0;top:0;width:${aperture.width}px;height:${aperture.height}px;visibility:visible;opacity:1;clip-path:none;perspective:none;transform-origin:0 0;will-change:transform`;
+  surface.image.style.cssText = `${sceneBackground(room)};inset:auto;left:${-layout.planeWidth / 2}px;top:${-layout.planeHeight / 2}px;width:${layout.planeWidth}px;height:${layout.planeHeight}px;transform-origin:50% 50%;will-change:transform`;
+  surface.innerShade.style.visibility = 'hidden';
+  let cancelled = false;
+  const restore = () => {
+    surface.viewport.style.cssText = viewportStyle;
+    surface.image.style.cssText = imageStyle;
+    surface.viewportSize = undefined;
+    pages.forEach((page, index) => { page.style.visibility = pageVisibility[index]; });
+    gsap.set(facadeStage, { scale: 1, x: 0, y: 0 });
+    cancelMobileTravel = null;
+    portalTravelInProgress = false;
+    app.classList.remove('portal-travelling');
+  };
+  cancelMobileTravel = () => { cancelled = true; navigation?.kill(); restore(); };
+  const motion = { progress: 0 };
+  const update = () => {
+    const p = entering ? motion.progress : 1 - motion.progress;
+    const frame = portalFlightFrame(aperture, width, height, p, preview, pose, painted);
+    gsap.set(facadeStage, { scale: frame.scale, x: frame.facadeX, y: frame.facadeY });
+    // Once the door surrounds the screen, its wall no longer needs a giant texture.
+    facadeStage.style.visibility = frame.coverage > 1.025 ? 'hidden' : 'visible';
+    facadeStage.style.opacity = frame.coverage > 1.025 ? '0' : '1';
+    surface.viewport.style.transform = frame.viewportTransform;
+    surface.image.style.transform = frame.imageTransform;
+  };
+  update();
+  await paintReady();
+  if (cancelled) return;
+  if (!entering) gsap.set(worldStage, { opacity: 0 });
+  const duration = entering ? 1.5 : 1.35;
+  travelBurst(!entering, duration * 1000);
+  await new Promise<void>(resolve => {
+    navigation = gsap.timeline({ onComplete: resolve });
+    navigation.to(motion, { progress: 1, duration, ease: entering ? portalEnter : portalExit, onUpdate: update }, 0);
+    if (entering) navigation.to(view.querySelectorAll('.select-heading,.select-footer,.select-navigation,.scene-controls'), { autoAlpha: 0, y: -22, duration: .22, ease: 'power2.in' }, 0);
+    else navigation.add(leaveRoomUi(), 0);
+  });
+  if (cancelled) return;
+  if (entering) {
+    pan = 0;
+    mousePosition = { dx: 0, dy: 0 };
+    roomPointerOrigin = { dx: 0, dy: 0 };
+    deviceTilt?.calibrate();
+  }
+  history.pushState(null, '', entering ? `#room/${room.id}` : `#select/${room.id}`);
+  render();
+  const controls = entering ? null : view.querySelectorAll('.select-heading,.select-footer,.select-navigation,.scene-controls');
+  if (entering) {
+    gsap.killTweensOf([worldCamera, worldStage]);
+    gsap.set(worldCamera, { scale: 1, ...roomCameraPose() });
+    gsap.set(worldStage, { opacity: 1 });
+  } else {
+    gsap.set(facadeStage, { scale: 1, x: 0, y: 0, opacity: 1, visibility: 'visible' });
+    if (controls) gsap.set(controls, { autoAlpha: 0, y: -12 });
+  }
+  // The destination paints underneath the identical photograph before release.
+  await paintReady();
+  if (cancelled) return;
+  restore();
+  gsap.set(facadeStage, { opacity: entering ? 0 : 1, visibility: entering ? 'hidden' : 'visible' });
+  syncPortalSceneImages();
+  if (sceneResizePending) { sceneResizePending = false; refreshSceneLayout(); }
+  busy = false;
+  if (entering) revealRoomUi();
+  else if (controls) gsap.to(controls, { autoAlpha: 1, y: 0, duration: .4, stagger: .025, ease: 'power2.out' });
+}
+
 async function travelRoom(entering: boolean) {
   if (busy || (entering ? screen.kind !== 'select' : screen.kind !== 'room')) return;
   busy = true;
@@ -873,6 +974,16 @@ async function travelRoom(entering: boolean) {
     history.pushState(null, '', entering ? `#room/${room.id}` : `#select/${room.id}`);
     render();
     busy = false;
+    return;
+  }
+  if (touchDevice.matches) {
+    try { await travelMobileRoom(entering, room); }
+    catch {
+      cancelMobileTravel?.();
+      history.replaceState(null, '', entering ? `#room/${room.id}` : `#select/${room.id}`);
+      busy = false;
+      render();
+    }
     return;
   }
   navigation?.kill();
@@ -1115,7 +1226,7 @@ async function go(hash: string, transition = false) {
   if (kind === 'room') navigation.call(() => { if (screen.kind === 'room') revealRoomUi(); }, [], swapAt + .7);
   navigation.to({}, { duration: kind === 'finale' ? 3.8 : kind === 'room' ? 1.7 : kind === 'notebook' || kind === 'chapter' ? 1.45 : leavingTv ? 1.1 : 1 }, swapAt);
 }
-function restoreHistory() { navigation?.kill(); stopTravelBurst(); app.classList.remove('document-travelling'); gsap.killTweensOf('#transition-veil'); gsap.set('#transition-veil', { autoAlpha: 0, clearProps: 'backgroundColor' }); gsap.set('.veil-line', { clearProps: 'opacity' }); portalSurfaces.forEach(surface => { surface.viewport.style.opacity = ''; }); gsap.killTweensOf(facadeTrack); clearChapterBlur(); if (flightMotion) { gsap.killTweensOf(flightMotion); } flightMotion = null; gsap.set(facadeStage, { scale: 1, x: 0, y: 0 }); document.querySelector('#wall-motion-blur')?.setAttribute('stdDeviation', '0'); document.querySelector('#door-motion-blur')?.setAttribute('stdDeviation', '0 0'); document.querySelector('#door-projection')?.setAttribute('flood-opacity', '.208'); document.querySelector('.portal-flight')?.remove(); facadeTrack.querySelectorAll<HTMLElement>('.portal-panel').forEach((panel) => { panel.style.visibility = ''; }); portalTravelInProgress = false; app.classList.remove('portal-travelling'); document.querySelector<SVGSVGElement>('.optical-definitions')?.unpauseAnimations(); busy = false; awaitingSelectReveal = null; outgoingSelectIndex = null; render(); if (screen.kind === 'select') { gsap.killTweensOf(facadeTrack); slidePortalTo(roomIndex(screen.room), 0); } }
+function restoreHistory() { cancelMobileTravel?.(); navigation?.kill(); stopTravelBurst(); app.classList.remove('document-travelling'); gsap.killTweensOf('#transition-veil'); gsap.set('#transition-veil', { autoAlpha: 0, clearProps: 'backgroundColor' }); gsap.set('.veil-line', { clearProps: 'opacity' }); portalSurfaces.forEach(surface => { surface.viewport.style.opacity = ''; }); gsap.killTweensOf(facadeTrack); clearChapterBlur(); if (flightMotion) { gsap.killTweensOf(flightMotion); } flightMotion = null; gsap.set(facadeStage, { scale: 1, x: 0, y: 0 }); document.querySelector('#wall-motion-blur')?.setAttribute('stdDeviation', '0'); document.querySelector('#door-motion-blur')?.setAttribute('stdDeviation', '0 0'); document.querySelector('#door-projection')?.setAttribute('flood-opacity', '.208'); document.querySelector('.portal-flight')?.remove(); facadeTrack.querySelectorAll<HTMLElement>('.portal-panel').forEach((panel) => { panel.style.visibility = ''; }); portalTravelInProgress = false; app.classList.remove('portal-travelling'); document.querySelector<SVGSVGElement>('.optical-definitions')?.unpauseAnimations(); busy = false; awaitingSelectReveal = null; outgoingSelectIndex = null; render(); if (screen.kind === 'select') { gsap.killTweensOf(facadeTrack); slidePortalTo(roomIndex(screen.room), 0); } }
 window.addEventListener('hashchange', restoreHistory);
 window.addEventListener('popstate', restoreHistory);
 render();
@@ -1265,7 +1376,7 @@ app.addEventListener('pointermove', (event) => {
   if (!pointerStart || screen.kind !== 'room') return;
   if (Math.abs(event.clientX - pointerStart.x) > 7) moved = true;
   pan = THREE.MathUtils.clamp(pointerStart.pan + (event.clientX - pointerStart.x) * 0.6, -55, 55);
-  const worldX = pan * .35 - (mousePosition.dx - roomPointerOrigin.dx) * Math.min(50, innerWidth * .1);
+  const worldX = roomCameraPose().x;
   gsap.to(worldCamera, { x: worldX, duration: .65, ease: 'power3.out', overwrite: 'auto', onUpdate: syncHotspotPosition });
 });
 app.addEventListener('pointerleave', event => {

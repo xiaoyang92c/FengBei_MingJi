@@ -27,7 +27,7 @@ export function mountMemoryLedger(paper: HTMLElement, reduced: boolean, onReady?
   let opened = false;
   let words: ReturnType<typeof mountLedgerWords> | null = null;
   let frame = 0;
-  let fold: HTMLElement | null = null;
+  let packet: ReturnType<typeof createPaperFold> | null = null;
   let jump: gsap.core.Tween | null = null;
   let opening: gsap.core.Timeline | null = null;
   const context = gsap.context(() => {}, paper.parentElement!);
@@ -109,9 +109,8 @@ export function mountMemoryLedger(paper: HTMLElement, reduced: boolean, onReady?
     opened = true;
     paper.inert = false;
     paper.setAttribute('aria-busy', 'false');
-    context.add(() => gsap.set(paper, { visibility: 'visible' }));
-    fold?.remove();
-    fold = null;
+    if (packet) packet.handoff();
+    else context.add(() => gsap.set(paper, { visibility: 'visible' }));
     if (!reduced) context.add(() => {
       const viewport = paper.getBoundingClientRect();
       paper.querySelectorAll<HTMLElement>('[data-typeset]').forEach(element => {
@@ -143,16 +142,17 @@ export function mountMemoryLedger(paper: HTMLElement, reduced: boolean, onReady?
   window.addEventListener('resize', finishOnResize, { passive: true });
   if (reduced) finishOpening();
   else {
-    const packet = createPaperFold(paper);
-    fold = packet.fold;
+    const openingPacket = createPaperFold(paper);
+    packet = openingPacket;
     paper.inert = true;
     paper.setAttribute('aria-busy', 'true');
     context.add(() => {
-      gsap.set(paper, { visibility: 'hidden' });
-      gsap.set(packet.bottom, { rotationX: 180, transformOrigin: '50% 0%', force3D: true });
+      paper.classList.add('paper-is-folding');
+      openingPacket.motion.angle = 180;
+      openingPacket.render();
       opening = gsap.timeline({ onComplete: finishOpening })
-        .fromTo(packet.fold, { y: -paper.offsetTop - packet.height / 2 - 40 }, { y: 0, duration: .6, ease: 'power3.out' })
-        .to(packet.bottom, { rotationX: 0, duration: .9, ease: 'power2.inOut' }, .52);
+        .fromTo(openingPacket.fold, { y: -paper.offsetTop - openingPacket.height / 2 - 40 }, { y: 0, duration: .6, ease: 'power3.out' })
+        .to(openingPacket.motion, { angle: 0, duration: .9, ease: 'power2.inOut', onUpdate: openingPacket.render }, .52);
     });
   }
   updatePosition();
@@ -166,7 +166,7 @@ export function mountMemoryLedger(paper: HTMLElement, reduced: boolean, onReady?
     chronology.dispose();
     words?.dispose();
     context.revert();
-    fold?.remove();
+    packet?.dispose();
     paper.removeEventListener('click', onNavigate);
     paper.removeEventListener('scroll', schedulePosition);
     paper.removeEventListener('wheel', cancelJump);

@@ -57,6 +57,7 @@ export function mountAtmosphere(app: HTMLElement, rig: HTMLElement, grain: HTMLC
   definitions.querySelector('#lens-field')!.setAttribute('href', field.toDataURL());
 
   const context = grain.getContext('2d');
+  const view = app.querySelector<HTMLElement>('#view');
   const mobile = window.matchMedia('(pointer: coarse)');
   let noise: ImageData | null = null;
   function resize() {
@@ -70,7 +71,8 @@ export function mountAtmosphere(app: HTMLElement, rig: HTMLElement, grain: HTMLC
   let lastGrain = 0;
   const tick = (time: number) => {
     if (document.hidden) return;
-    const scene = app.querySelector<HTMLElement>('#view')?.dataset.screen;
+    if (app.classList.contains('portal-travelling') || app.classList.contains('document-travelling')) return;
+    const scene = view?.dataset.screen;
     if (scene !== 'select' && scene !== 'room' && scene !== 'clue') return;
     if (reduced.matches) {
       rig.style.transform = 'none';

@@ -59,31 +59,42 @@ function setup({ permission, mobile = true, secure = true, reduced = false, supp
   const near = value => assert.ok(Math.abs(value) < .00001);
   near(p.sample(20, 65, 3, 0).dx); // Natural grip is the neutral pose.
   p.reset(); p.sample(0, 0, 0, 0);
-  assert.ok(p.sample(0, 0, 18, 0).dx > .38);
+  assert.ok(p.sample(0, 0, 8, 0).dx > .3, 'a comfortable small tilt has a visible response');
   near(p.sample(0, .3, .3, 0).dx); // Ignore small hand tremor.
   near(p.sample(0, .3, .3, 0).dy);
-  assert.equal(p.sample(0, 0, 80, 0).dx, .4); // Clamp large tilts.
+  assert.equal(p.sample(0, 0, 80, 0).dx, .6); // Clamp large tilts.
   p.reset(); p.sample(0, 0, 0, 90);
   near(p.sample(0, 0, 18, 90).dx);
-  assert.ok(p.sample(0, 0, 18, 90).dy < -.38); // Landscape axis and sign.
+  assert.ok(p.sample(0, 0, 18, 90).dy < -.58); // Landscape axis and sign.
   p.reset(); p.sample(359, 80, 0, 0);
-  assert.ok(Math.abs(p.sample(1, 80, 0, 0).dx) < .05); // Compass angle wrap.
+  const wrapped = p.sample(1, 80, 0, 0);
+  const smallTurn = new TiltProjector(); smallTurn.sample(-1, 80, 0, 0);
+  near(wrapped.dx - smallTurn.sample(1, 80, 0, 0).dx); // 359→1 equals a two-degree turn.
+  assert.ok(Math.abs(wrapped.dx) < .1);
   p.reset(); p.sample(0, 89, 0, 0);
   const upright = p.sample(0, 91, 0, 0);
   near(upright.dx);
-  assert.ok(upright.dy > 0 && upright.dy < .05); // Cross upright without a jump.
+  assert.ok(upright.dy > 0 && upright.dy < .1); // Cross upright without a jump.
 }
 {
   const s = setup();
   s.tilt.setSceneActive(true);
+  assert.equal(s.window.count('deviceorientation'), 0, 'every browser starts off, including those without requestPermission');
+  assert.equal(s.tilt.state, 'off');
+  s.sample(60, 18); s.flush();
+  assert.equal(s.positions.length, 0, 'no camera movement before the user opts in');
+  await s.tilt.toggle();
   assert.equal(s.window.count('deviceorientation'), 1);
   s.sample(null, null); assert.equal(s.tilt.state, 'starting');
   s.sample(60, 0); s.flush();
   assert.equal(s.tilt.state, 'active'); assert.equal(s.timers.size, 0);
   s.sample(60, 18); s.flush();
-  assert.ok(s.positions.at(-1).dx > .38);
+  assert.ok(s.positions.at(-1).dx > .58);
   const calls = s.positions.length;
   s.sample(60, 18); s.flush(); assert.equal(s.positions.length, calls, 'still phone does not repeat camera updates');
+  s.tilt.calibrate();
+  assert.equal(s.positions.at(-1).dx, 0, 'room arrival can reset the resting view');
+  s.sample(60, 18); s.flush(); assert.equal(s.positions.at(-1).dx, 0);
   s.window.screen.orientation.angle = 90;
   s.window.screen.orientation.emit('change');
   s.sample(60, 18); s.flush();
@@ -123,7 +134,7 @@ function setup({ permission, mobile = true, secure = true, reduced = false, supp
   s.tilt.dispose();
 }
 {
-  const s = setup(); s.tilt.setSceneActive(true);
+  const s = setup(); s.tilt.setSceneActive(true); await s.tilt.toggle();
   [...s.timers.values()][0]();
   assert.equal(s.tilt.state, 'no-data'); assert.equal(s.window.count('deviceorientation'), 0);
   await s.tilt.toggle(); assert.equal(s.window.count('deviceorientation'), 1);

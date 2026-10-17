@@ -41,6 +41,16 @@ export function sceneBackgroundStyle(room: Room, width: number, height: number) 
   return `background-image:url('${layout.src}');background-size:${layout.photoWidth}px ${layout.photoHeight}px;background-position:${layout.photoLeft}px ${layout.photoTop}px`;
 }
 
+/** Painted distances from the image origin, accounting for focal cropping. */
+export function sceneCoverage(layout: ReturnType<typeof sceneLayout>) {
+  return {
+    left: layout.planeWidth / 2 - Math.max(0, layout.photoLeft),
+    right: Math.min(layout.planeWidth, layout.photoLeft + layout.photoWidth) - layout.planeWidth / 2,
+    top: layout.planeHeight / 2 - Math.max(0, layout.photoTop),
+    bottom: Math.min(layout.planeHeight, layout.photoTop + layout.photoHeight) - layout.planeHeight / 2,
+  };
+}
+
 export function clueScenePosition(clue: Clue, room: Room, width: number, height: number) {
   const layout = sceneLayout(room, width, height);
   const [x, y] = anchors[clue.id][layout.desktop ? 'desktop' : 'mobile'];
